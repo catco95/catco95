@@ -34,17 +34,21 @@ const AccessGate = ({ onAccessGranted }) => {
         className="max-w-md w-full"
       >
         <div className="text-center mb-8">
-          <img 
-            src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-            alt="Crowntime" 
-            className="h-32 w-auto mx-auto mb-6"
-            style={{ 
-              objectFit: 'cover',
-              objectPosition: 'top',
-              clipPath: 'inset(0 0 35% 0)',
-              filter: 'brightness(1.2) saturate(0.8)'
-            }}
-          />
+          <div className="flex items-center gap-1">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
+              alt="Crowntime" 
+              className="h-32 w-auto mx-auto mb-6"
+              style={{ 
+                objectFit: 'cover',
+                objectPosition: 'top',
+                clipPath: 'inset(0 0 35% 0)',
+                filter: 'brightness(1.5) contrast(1.1)',
+                mixBlendMode: 'screen'
+              }}
+            />
+            <span className="text-sm text-primary font-semibold mb-6" style={{ marginTop: '-64px' }}>TM</span>
+          </div>
           <div className="inline-block px-4 py-1 bg-primary/20 border border-primary/30 rounded-sm mb-6">
             <span className="text-xs uppercase tracking-widest text-primary font-semibold">Beta Testing</span>
           </div>

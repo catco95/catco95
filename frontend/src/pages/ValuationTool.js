@@ -142,21 +142,21 @@ const ValuationTool = () => {
       {/* Header */}
       <header className="backdrop-blur-xl bg-background/70 border-b border-white/10" data-testid="header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <img 
-            src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-            alt="Crowntime" 
-            className="h-20 w-auto cursor-pointer"
-            onClick={() => navigate("/")}
-            data-testid="logo"
-            style={{ 
-              objectFit: 'cover',
-              objectPosition: 'top',
-              clipPath: 'inset(0 0 35% 0)',
-              filter: 'brightness(1.3) contrast(0.9) saturate(0.7)',
-              mixBlendMode: 'lighten',
-              opacity: 0.95
-            }}
-          />
+          <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
+              alt="Crowntime" 
+              className="h-20 w-auto"
+              style={{ 
+                objectFit: 'cover',
+                objectPosition: 'top',
+                clipPath: 'inset(0 0 35% 0)',
+                filter: 'brightness(1.5) contrast(1.1)',
+                mixBlendMode: 'screen'
+              }}
+            />
+            <span className="text-xs text-primary font-semibold" style={{ marginTop: '-40px' }}>TM</span>
+          </div>
           <button
             onClick={() => navigate("/")}
             data-testid="back-button"
