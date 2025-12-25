@@ -51,8 +51,8 @@ class ValuationResponse(BaseModel):
     retail_price: Optional[str] = None
     retail_relationship: Optional[str] = None
     confidence_score: float
-    value_drivers: List[str]
-    risk_factors: List[str]
+    value_drivers: List[str] = Field(default_factory=list)
+    risk_factors: List[str] = Field(default_factory=list)
     market_sentiment: str
     signal: str
     signal_justification: str
@@ -255,17 +255,24 @@ JSON:
         
         valuation_data = json.loads(response_clean)
         
+        # Validate required fields
+        if not valuation_data.get("valuation_range") or \
+           not valuation_data["valuation_range"].get("low") or \
+           not valuation_data["valuation_range"].get("fair") or \
+           not valuation_data["valuation_range"].get("high"):
+            raise ValueError("AI response missing required valuation range fields")
+        
         valuation_response = ValuationResponse(
             valuation_range=ValuationRange(**valuation_data["valuation_range"]),
             retail_price=valuation_data.get("retail_price"),
             retail_relationship=valuation_data.get("retail_relationship"),
-            confidence_score=valuation_data["confidence_score"],
-            value_drivers=valuation_data["value_drivers"],
-            risk_factors=valuation_data["risk_factors"],
-            market_sentiment=valuation_data["market_sentiment"],
-            signal=valuation_data["signal"],
-            signal_justification=valuation_data["signal_justification"],
-            full_analysis=valuation_data["full_analysis"]
+            confidence_score=valuation_data.get("confidence_score", 0.5),
+            value_drivers=valuation_data.get("value_drivers", ["Unable to determine specific drivers"]),
+            risk_factors=valuation_data.get("risk_factors", ["Insufficient data for complete assessment"]),
+            market_sentiment=valuation_data.get("market_sentiment", "Stable"),
+            signal=valuation_data.get("signal", "Hold"),
+            signal_justification=valuation_data.get("signal_justification", "Requires more data for definitive recommendation"),
+            full_analysis=valuation_data.get("full_analysis", "Analysis based on available information")
         )
         
         doc = valuation_response.model_dump()
