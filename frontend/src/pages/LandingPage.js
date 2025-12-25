@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Watch, TrendingUp, Shield, BarChart3 } from "lucide-react";
 import BetaBadge from "../components/BetaBadge";
+import CrowntimeLogo from "../components/CrowntimeLogo";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -19,19 +20,8 @@ const LandingPage = () => {
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-              alt="Crowntime" 
-              className="h-16 w-auto"
-              style={{ 
-                objectFit: 'cover',
-                objectPosition: 'top',
-                clipPath: 'inset(0 0 35% 0)',
-                mixBlendMode: 'lighten'
-              }}
-            />
-            <span className="text-xs text-primary font-bold">TM</span>
+          <div className="cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
+            <CrowntimeLogo size="md" />
           </div>
           <button
             onClick={() => navigate("/valuate")}
@@ -195,20 +185,7 @@ const LandingPage = () => {
       <footer className="border-t border-white/10 py-12" data-testid="footer">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center gap-6">
-            <div className="flex items-center gap-2">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-                alt="Crowntime" 
-                className="h-24 w-auto"
-                style={{ 
-                  objectFit: 'cover',
-                  objectPosition: 'top',
-                  clipPath: 'inset(0 0 35% 0)',
-                  mixBlendMode: 'lighten'
-                }}
-              />
-              <span className="text-sm text-primary font-bold">TM</span>
-            </div>
+            <CrowntimeLogo size="xl" />
             
             {/* Legal Disclaimer */}
             <div className="max-w-3xl text-center space-y-4">

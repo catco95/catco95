@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Upload, Loader2, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import axios from "axios";
 import BetaBadge from "../components/BetaBadge";
+import CrowntimeLogo from "../components/CrowntimeLogo";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -142,19 +143,8 @@ const ValuationTool = () => {
       {/* Header */}
       <header className="backdrop-blur-xl bg-background/70 border-b border-white/10" data-testid="header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-              alt="Crowntime" 
-              className="h-16 w-auto"
-              style={{ 
-                objectFit: 'cover',
-                objectPosition: 'top',
-                clipPath: 'inset(0 0 35% 0)',
-                mixBlendMode: 'lighten'
-              }}
-            />
-            <span className="text-xs text-primary font-bold">TM</span>
+          <div className="cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
+            <CrowntimeLogo size="md" />
           </div>
           <button
             onClick={() => navigate("/")}
