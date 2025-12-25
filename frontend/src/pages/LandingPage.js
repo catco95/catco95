@@ -14,10 +14,14 @@ const LandingPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-white/10"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          <div className="font-heading text-3xl tracking-tight text-primary" data-testid="logo">
-            Crowntime AI
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <img 
+            src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
+            alt="Crowntime" 
+            className="h-12 w-auto cursor-pointer"
+            onClick={() => navigate("/")}
+            data-testid="logo"
+          />
           <button
             onClick={() => navigate("/valuate")}
             data-testid="header-valuate-button"
@@ -179,12 +183,27 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-white/10 py-12" data-testid="footer">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="font-heading text-2xl text-primary">
-              Crowntime AI
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Indicative market intelligence only. Not a certified appraisal.
+          <div className="flex flex-col items-center gap-6">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
+              alt="Crowntime" 
+              className="h-16 w-auto"
+            />
+            
+            {/* Legal Disclaimer */}
+            <div className="max-w-3xl text-center space-y-4">
+              <h3 className="text-xs uppercase tracking-widest text-primary font-semibold">Legal Disclaimer</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Crowntime AI provides indicative market intelligence only and is not a certified appraisal service. 
+                Valuations are generated using artificial intelligence based on publicly available market data and should 
+                be considered estimates only. Actual sale prices may vary significantly based on condition, authenticity, 
+                market timing, and buyer preferences. Crowntime AI makes no warranties regarding accuracy and assumes no 
+                liability for decisions made based on these valuations. For certified appraisals, please consult a 
+                qualified professional watch appraiser. All trademarks and brand names are property of their respective owners.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                © 2025 Crowntime. All rights reserved.
+              </p>
             </div>
           </div>
         </div>
