@@ -69,7 +69,22 @@ class ValuationHistory(BaseModel):
     signal: str
     timestamp: str
 
-def create_valuation_prompt(watch_data: dict) -> str:
+def get_currency_symbol(currency: str) -> str:
+    """Get currency symbol for display"""
+    symbols = {
+        "USD": "$",
+        "EUR": "€",
+        "GBP": "£",
+        "CHF": "Fr",
+        "AUD": "A$",
+        "CAD": "C$",
+        "JPY": "¥",
+        "HKD": "HK$",
+        "SGD": "S$"
+    }
+    return symbols.get(currency, currency)
+
+def create_valuation_prompt(watch_data: dict, currency: str = "USD") -> str:
     """Create detailed prompt for watch valuation"""
     
     system_context = """You are Crowntime AI, a specialist watch market intelligence assistant.
@@ -97,6 +112,8 @@ You always prefer:
 - Condition discipline over brand bias
 
 If information is missing or uncertain, you explicitly say so and reduce confidence."""
+    
+    currency_symbol = get_currency_symbol(currency)
     
     watch_prompt = f"""Analyse the following watch for indicative market value:
 
@@ -126,12 +143,14 @@ VALUATION INSTRUCTIONS:
    - Fair (private sale realistic)
    - High (top of market, patient sale)
 
+IMPORTANT: Provide all valuations in {currency} ({currency_symbol}). Use current market rates and local market conditions for this currency.
+
 OUTPUT FORMAT (respond in valid JSON):
 {{
   "valuation_range": {{
-    "low": "$X,XXX",
-    "fair": "$X,XXX",
-    "high": "$X,XXX"
+    "low": "{currency_symbol}X,XXX",
+    "fair": "{currency_symbol}X,XXX",
+    "high": "{currency_symbol}X,XXX"
   }},
   "confidence_score": 0.85,
   "value_drivers": [
@@ -169,6 +188,7 @@ async def valuate_watch(
     box_papers: str = Form(""),
     modifications: str = Form(""),
     location: str = Form(""),
+    currency: str = Form("USD"),
     image: Optional[UploadFile] = File(None)
 ):
     try:
@@ -195,6 +215,8 @@ async def valuate_watch(
             "modifications": modifications,
             "location": location
         }
+        
+        currency_symbol = get_currency_symbol(currency)
         
         api_key = os.environ.get('EMERGENT_LLM_KEY', '')
         if not api_key:
@@ -230,7 +252,7 @@ You always prefer:
 
 If information is missing or uncertain, you explicitly say so and reduce confidence."""
 
-            image_only_prompt = """Analyse the watch in this image for indicative market value.
+            image_only_prompt = f"""Analyse the watch in this image for indicative market value.
 
 Based on what you can see in the image, identify:
 - Brand (if visible)
@@ -252,13 +274,15 @@ VALUATION INSTRUCTIONS:
    - Fair (private sale realistic)
    - High (top of market, patient sale)
 
+IMPORTANT: Provide all valuations in {currency} ({currency_symbol}). Use current market rates and local market conditions for this currency.
+
 OUTPUT FORMAT (respond in valid JSON):
-{
-  "valuation_range": {
-    "low": "$X,XXX",
-    "fair": "$X,XXX",
-    "high": "$X,XXX"
-  },
+{{
+  "valuation_range": {{
+    "low": "{currency_symbol}X,XXX",
+    "fair": "{currency_symbol}X,XXX",
+    "high": "{currency_symbol}X,XXX"
+  }},
   "confidence_score": 0.XX (REDUCE if identification is uncertain),
   "value_drivers": [
     "bullet point 1",
@@ -295,7 +319,7 @@ Provide ONLY the JSON response, no additional text."""
             )
         else:
             # Text mode (with or without image)
-            system_context, watch_prompt = create_valuation_prompt(watch_data)
+            system_context, watch_prompt = create_valuation_prompt(watch_data, currency)
             
             chat = LlmChat(
                 api_key=api_key,
