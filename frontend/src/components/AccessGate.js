@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Shield } from 'lucide-react';
+import CrowntimeLogo from './CrowntimeLogo';
 
 const AccessGate = ({ onAccessGranted }) => {
   const [code, setCode] = useState('');
@@ -34,19 +35,8 @@ const AccessGate = ({ onAccessGranted }) => {
         className="max-w-md w-full"
       >
         <div className="text-center mb-8">
-          <div className="flex items-center gap-2 mb-6">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-              alt="Crowntime" 
-              className="h-24 w-auto mx-auto"
-              style={{ 
-                objectFit: 'cover',
-                objectPosition: 'top',
-                clipPath: 'inset(0 0 35% 0)',
-                mixBlendMode: 'lighten'
-              }}
-            />
-            <span className="text-sm text-primary font-bold">TM</span>
+          <div className="mb-6 flex justify-center">
+            <CrowntimeLogo size="xl" />
           </div>
           <div className="inline-block px-4 py-1 bg-primary/20 border border-primary/30 rounded-sm mb-6">
             <span className="text-xs uppercase tracking-widest text-primary font-semibold">Beta Testing</span>
