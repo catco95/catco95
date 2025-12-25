@@ -35,18 +35,17 @@ const AccessGate = ({ onAccessGranted }) => {
       >
         <div className="text-center mb-8">
           <div className="flex items-center gap-2 mb-6">
-            <div className="bg-[#1a4d3c] px-6 py-4 rounded-sm flex items-center justify-center">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-                alt="Crowntime" 
-                className="h-24 w-auto mx-auto"
-                style={{ 
-                  objectFit: 'cover',
-                  objectPosition: 'top',
-                  clipPath: 'inset(0 0 35% 0)'
-                }}
-              />
-            </div>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
+              alt="Crowntime" 
+              className="h-24 w-auto mx-auto"
+              style={{ 
+                objectFit: 'cover',
+                objectPosition: 'top',
+                clipPath: 'inset(0 0 35% 0)',
+                mixBlendMode: 'lighten'
+              }}
+            />
             <span className="text-sm text-primary font-bold">TM</span>
           </div>
           <div className="inline-block px-4 py-1 bg-primary/20 border border-primary/30 rounded-sm mb-6">
