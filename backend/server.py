@@ -239,7 +239,7 @@ OUTPUT FORMAT (respond in valid JSON):
   }},
   "retail_price": "{currency_symbol}X,XXX (if identifiable, otherwise null)",
   "retail_relationship": "Trading at X% of retail" or "Premium of X% over retail" or null if retail unavailable,
-  "confidence_score": 0.XX (REDUCE if identification is uncertain),
+  "confidence_score": "0.XX (REDUCE if identification is uncertain)",
   "value_drivers": [
     "bullet point 1",
     "bullet point 2"
