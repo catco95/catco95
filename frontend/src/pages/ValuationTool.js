@@ -10,6 +10,7 @@ const API = `${BACKEND_URL}/api`;
 const ValuationTool = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -59,7 +60,19 @@ const ValuationTool = () => {
     }
     
     setLoading(true);
+    setLoadingProgress(0);
     setResult(null);
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 800);
 
     try {
       const formDataToSend = new FormData();
@@ -77,12 +90,20 @@ const ValuationTool = () => {
         }
       });
 
-      setResult(response.data);
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setTimeout(() => {
+        setResult(response.data);
+      }, 300);
     } catch (error) {
+      clearInterval(progressInterval);
       console.error("Valuation error:", error);
       alert(error.response?.data?.detail || "Failed to process valuation. Please try again.");
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+        setLoadingProgress(0);
+      }, 500);
     }
   };
 
@@ -414,10 +435,24 @@ const ValuationTool = () => {
                     type="submit"
                     disabled={loading}
                     data-testid="submit-valuation-button"
-                    className="rounded-none uppercase tracking-widest text-xs font-bold px-16 py-5 bg-primary text-primary-foreground hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+                    className="rounded-none uppercase tracking-widest text-xs font-bold px-16 py-5 bg-primary text-primary-foreground hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {loading ? "Analyzing..." : "Get Valuation"}
+                    {loading ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex items-center gap-3">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Analyzing Market Data...
+                        </div>
+                        <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary-foreground transition-all duration-300"
+                            style={{ width: `${loadingProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      "Get Valuation"
+                    )}
                   </button>
                 </div>
               </div>
