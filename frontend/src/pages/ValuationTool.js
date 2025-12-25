@@ -27,7 +27,8 @@ const ValuationTool = () => {
     condition: "",
     box_papers: "",
     modifications: "",
-    location: ""
+    location: "",
+    currency: "USD"
   });
 
   const handleChange = (e) => {
@@ -182,6 +183,30 @@ const ValuationTool = () => {
                       )}
                     </label>
                   </div>
+                </div>
+
+                {/* Currency Selection */}
+                <div className="mb-8 bg-card/30 border border-white/5 rounded-sm p-6">
+                  <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-4">
+                    Valuation Currency
+                  </label>
+                  <select
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleChange}
+                    data-testid="currency-select"
+                    className="w-full bg-transparent border-b border-white/20 rounded-none px-0 py-4 focus:border-primary focus:outline-none text-foreground"
+                  >
+                    <option value="USD" className="bg-card text-foreground">USD - US Dollar ($)</option>
+                    <option value="EUR" className="bg-card text-foreground">EUR - Euro (€)</option>
+                    <option value="GBP" className="bg-card text-foreground">GBP - British Pound (£)</option>
+                    <option value="CHF" className="bg-card text-foreground">CHF - Swiss Franc (Fr)</option>
+                    <option value="AUD" className="bg-card text-foreground">AUD - Australian Dollar (A$)</option>
+                    <option value="CAD" className="bg-card text-foreground">CAD - Canadian Dollar (C$)</option>
+                    <option value="JPY" className="bg-card text-foreground">JPY - Japanese Yen (¥)</option>
+                    <option value="HKD" className="bg-card text-foreground">HKD - Hong Kong Dollar (HK$)</option>
+                    <option value="SGD" className="bg-card text-foreground">SGD - Singapore Dollar (S$)</option>
+                  </select>
                 </div>
 
                 {/* Form Grid */}
@@ -522,7 +547,8 @@ const ValuationTool = () => {
                       condition: "",
                       box_papers: "",
                       modifications: "",
-                      location: ""
+                      location: "",
+                      currency: "USD"
                     });
                     setImagePreview(null);
                     setSelectedImage(null);
