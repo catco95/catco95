@@ -1,0 +1,131 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "Crowntime AI",
+      "persona": "The Curator",
+      "vibe": "Professional, Conservative, Expensive, Secure",
+      "archetype": "Jewel & Luxury"
+    },
+    "typography": {
+      "font_family": {
+        "heading": "Playfair Display, serif",
+        "body": "Manrope, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "imports": [
+        "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      ],
+      "rules": [
+        "Headings (h1-h3) MUST use Playfair Display. Use font-normal or font-medium, never bold.",
+        "Body text and UI elements MUST use Manrope.",
+        "Numbers and Data (Prices, Years) MUST use Manrope with tabular-nums class.",
+        "Use tracking-tight for all headings larger than 24px.",
+        "Use tracking-widest for all OVERLINE text (uppercase labels)."
+      ]
+    },
+    "colors": {
+      "palette": {
+        "background": "hsl(222, 47%, 11%)",
+        "foreground": "hsl(210, 40%, 98%)",
+        "card": "hsl(217, 33%, 17%)",
+        "card_foreground": "hsl(210, 40%, 98%)",
+        "popover": "hsl(222, 47%, 11%)",
+        "popover_foreground": "hsl(210, 40%, 98%)",
+        "primary": "hsl(43, 74%, 66%)",
+        "primary_foreground": "hsl(222, 47%, 11%)",
+        "secondary": "hsl(217, 19%, 27%)",
+        "secondary_foreground": "hsl(210, 40%, 98%)",
+        "muted": "hsl(217, 19%, 27%)",
+        "muted_foreground": "hsl(215, 20%, 65%)",
+        "accent": "hsl(217, 19%, 27%)",
+        "accent_foreground": "hsl(210, 40%, 98%)",
+        "destructive": "hsl(0, 62%, 30%)",
+        "destructive_foreground": "hsl(210, 40%, 98%)",
+        "border": "hsl(217, 19%, 27%)",
+        "input": "hsl(217, 19%, 27%)",
+        "ring": "hsl(43, 74%, 66%)"
+      },
+      "usage": {
+        "primary_action": "bg-primary text-primary-foreground hover:bg-primary/90",
+        "secondary_action": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        "surface": "bg-card border border-white/10",
+        "subtle_text": "text-muted-foreground"
+      }
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-12 lg:p-24",
+      "section_gap": "gap-16 md:gap-32",
+      "element_gap": "gap-4 md:gap-8"
+    },
+    "visual_enhancers": {
+      "glassmorphism": "backdrop-blur-xl bg-background/70 border-b border-white/10",
+      "gradients": {
+        "gold_glow": "bg-gradient-to-r from-[#D4AF37] via-[#F2D06B] to-[#D4AF37]",
+        "dark_fade": "bg-gradient-to-b from-transparent to-background"
+      },
+      "borders": "border border-white/10",
+      "shadows": "shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+    },
+    "layout_strategies": {
+      "landing_page": "Mode A: Tetris Grid. Asymmetrical. Use large hero image of watch movement.",
+      "valuation_tool": "Mode B: Control Room Grid. Dense, data-heavy, clear hierarchy.",
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    },
+    "components": {
+      "buttons": {
+        "primary": "rounded-none uppercase tracking-widest text-xs font-bold px-8 py-4 bg-primary text-primary-foreground hover:bg-white hover:text-black transition-all duration-300",
+        "secondary": "rounded-none uppercase tracking-widest text-xs font-bold px-8 py-4 border border-white/20 hover:border-primary hover:text-primary transition-all duration-300"
+      },
+      "cards": {
+        "style": "bg-card/50 backdrop-blur-sm border border-white/5 hover:border-primary/30 transition-colors duration-300 rounded-sm",
+        "padding": "p-6 or p-8"
+      },
+      "inputs": {
+        "style": "bg-transparent border-b border-white/20 rounded-none px-0 py-4 focus:border-primary focus:ring-0 placeholder:text-white/20 transition-all"
+      }
+    },
+    "motion": {
+      "page_transition": "initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5, ease: 'easeOut' }}",
+      "hover_lift": "hover:-translate-y-1 transition-transform duration-300",
+      "stagger": "staggerChildren: 0.1"
+    },
+    "assets": {
+      "images": [
+        {
+          "category": "hero_background",
+          "url": "https://images.unsplash.com/photo-1745305023239-b476a0faa159?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjB3YXRjaCUyMG1hY3JvJTIwbWVjaGFuaWNhbCUyMG1vdmVtZW50fGVufDB8fHx8MTc2NjY2MjAzN3ww&ixlib=rb-4.1.0&q=85",
+          "description": "Macro shot of Patek Philippe movement. Use with heavy dark overlay (bg-black/80) for Hero section background."
+        },
+        {
+          "category": "lifestyle_collector",
+          "url": "https://images.unsplash.com/photo-1628608570910-5ba45093d2c2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwxfHxtYW4lMjB3ZWFyaW5nJTIwc3VpdCUyMGx1eHVyeSUyMHdhdGNofGVufDB8fHx8MTc2NjY2MjAzOHww&ixlib=rb-4.1.0&q=85",
+          "description": "Man in suit with luxury watch. Use for 'Who is this for' or 'About' section."
+        },
+        {
+          "category": "watch_detail",
+          "url": "https://images.unsplash.com/photo-1631802042706-230bce420129?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHw0fHxsdXh1cnklMjB3YXRjaCUyMG1hY3JvJTIwbWVjaGFuaWNhbCUyMG1vdmVtZW50fGVufDB8fHx8MTc2NjY2MjAzN3ww&ixlib=rb-4.1.0&q=85",
+          "description": "Close up watch on black surface. Use for Valuation Tool placeholder or sidebar."
+        }
+      ],
+      "icons": "Use Lucide React. Thin stroke width (1.5px) for elegance."
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Install 'lucide-react', 'framer-motion', 'clsx', 'tailwind-merge'.",
+    "2. THEME: Implement the dark navy theme in tailwind.config.js exactly as specified in the colors section.",
+    "3. FONTS: Add the Google Fonts import to index.css immediately.",
+    "4. LAYOUT: Build the Landing Page using the 'Tetris Grid' philosophy. Do not stack everything in a single column.",
+    "5. VALUATION FORM: This is the core feature. Split it into steps or use a very clean, spacious grid. Do not make it look like a Google Form. Use the 'Underlined Input' style defined in components.",
+    "6. RESULTS: The valuation result should look like a stock certificate or a high-end bank statement. Use the 'Gold' color for the estimated value.",
+    "7. DISCLAIMER: Must be visible but subtle (text-xs text-muted-foreground) at the bottom of the valuation card.",
+    "8. NAVIGATION: Simple, sticky header with glassmorphism. Logo on left (Serif font), 'Valuate' button on right (Gold pill).",
+    "9. UNIVERSAL: Apply 'data-testid' to all interactive elements."
+  ],
+  "universal_guidelines": [
+    "Do not use gradients for backgrounds, use solid deep colors.",
+    "Use 2x more padding than you think is necessary.",
+    "Always use 'Manrope' for numbers.",
+    "Never use pure black (#000000), use the deep navy (#0B0C10) defined.",
+    "Animations should be slow and smooth (duration-500 or duration-700)."
+  ]
+}
