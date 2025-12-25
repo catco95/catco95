@@ -99,14 +99,37 @@ class CrowntimeAPITester:
             'location': 'USA'
         }
         
-        success, response = self.run_test(
-            "Valuate Watch (Text Only)",
-            "POST",
-            "valuate",
-            200,
-            data=form_data,
-            files={}
-        )
+        # Send as form data, not JSON
+        url = f"{self.api_url}/valuate"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Valuate Watch (Text Only)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.post(url, data=form_data, timeout=60)
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                print(f"   Response keys: {list(response_data.keys())}")
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                print(f"   Response: {response.text[:200]}...")
+                self.failed_tests.append({
+                    "test": "Valuate Watch (Text Only)",
+                    "expected": 200,
+                    "actual": response.status_code,
+                    "response": response.text[:500]
+                })
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            self.failed_tests.append({
+                "test": "Valuate Watch (Text Only)",
+                "error": str(e)
+            })
+            return False
         
         if success and isinstance(response, dict):
             # Verify required fields in response
