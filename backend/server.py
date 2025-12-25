@@ -48,6 +48,8 @@ class ValuationResponse(BaseModel):
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     valuation_range: ValuationRange
+    retail_price: Optional[str] = None
+    retail_relationship: Optional[str] = None
     confidence_score: float
     value_drivers: List[str]
     risk_factors: List[str]
@@ -283,6 +285,8 @@ OUTPUT FORMAT (respond in valid JSON):
     "fair": "{currency_symbol}X,XXX",
     "high": "{currency_symbol}X,XXX"
   }},
+  "retail_price": "{currency_symbol}X,XXX (if identifiable, otherwise null)",
+  "retail_relationship": "Trading at X% of retail" or "Premium of X% over retail" or null if retail unavailable,
   "confidence_score": 0.XX (REDUCE if identification is uncertain),
   "value_drivers": [
     "bullet point 1",
@@ -356,6 +360,8 @@ Provide ONLY the JSON response, no additional text."""
         
         valuation_response = ValuationResponse(
             valuation_range=ValuationRange(**valuation_data["valuation_range"]),
+            retail_price=valuation_data.get("retail_price"),
+            retail_relationship=valuation_data.get("retail_relationship"),
             confidence_score=valuation_data["confidence_score"],
             value_drivers=valuation_data["value_drivers"],
             risk_factors=valuation_data["risk_factors"],
