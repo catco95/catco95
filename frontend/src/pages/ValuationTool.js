@@ -55,6 +55,13 @@ const ValuationTool = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Check valuation limit
+    const currentUsed = parseInt(localStorage.getItem('crowntime_valuations_used') || '0');
+    if (currentUsed >= 5) {
+      alert("You've reached the 5 valuation limit for this beta test. Please contact Crowntime for full access.");
+      return;
+    }
+    
     // Check if we have either text data or image
     const hasTextData = Object.values(formData).some(value => value.trim() !== "");
     
@@ -93,6 +100,11 @@ const ValuationTool = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
+
+      // Increment valuation count
+      const newCount = currentUsed + 1;
+      localStorage.setItem('crowntime_valuations_used', newCount.toString());
+      setValuationsUsed(newCount);
 
       clearInterval(progressInterval);
       setLoadingProgress(100);
