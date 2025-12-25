@@ -48,6 +48,15 @@ const ValuationTool = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if we have either text data or image
+    const hasTextData = Object.values(formData).some(value => value.trim() !== "");
+    
+    if (!hasTextData && !selectedImage) {
+      alert("Please provide either watch details or upload an image");
+      return;
+    }
+    
     setLoading(true);
     setResult(null);
 
@@ -70,7 +79,7 @@ const ValuationTool = () => {
       setResult(response.data);
     } catch (error) {
       console.error("Valuation error:", error);
-      alert("Failed to process valuation. Please try again.");
+      alert(error.response?.data?.detail || "Failed to process valuation. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -118,8 +127,11 @@ const ValuationTool = () => {
             <h1 className="font-heading text-4xl sm:text-5xl tracking-tight mb-4" data-testid="page-title">
               Watch Valuation Tool
             </h1>
-            <p className="text-muted-foreground text-lg" data-testid="page-subtitle">
+            <p className="text-muted-foreground text-lg mb-2" data-testid="page-subtitle">
               Provide detailed information for accurate market intelligence
+            </p>
+            <p className="text-muted-foreground text-sm" data-testid="image-only-hint">
+              Or simply upload a photo for instant AI analysis
             </p>
           </div>
 
@@ -129,7 +141,7 @@ const ValuationTool = () => {
                 {/* Image Upload */}
                 <div className="mb-12">
                   <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-4">
-                    Watch Image (Optional)
+                    Watch Image {imagePreview ? "(Required for image-only mode)" : "(Optional - or use image-only mode)"}
                   </label>
                   <div className="relative">
                     <input
@@ -145,11 +157,17 @@ const ValuationTool = () => {
                       className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/20 rounded-sm cursor-pointer hover:border-primary/50 transition-all"
                     >
                       {imagePreview ? (
-                        <img src={imagePreview} alt="Preview" className="h-full w-auto object-contain" />
+                        <div className="relative w-full h-full">
+                          <img src={imagePreview} alt="Preview" className="h-full w-full object-contain p-4" />
+                          <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-sm">
+                            Image uploaded ✓
+                          </div>
+                        </div>
                       ) : (
                         <>
                           <Upload className="w-12 h-12 text-muted-foreground mb-4" />
-                          <span className="text-sm text-muted-foreground">Click to upload watch image</span>
+                          <span className="text-sm text-muted-foreground mb-2">Click to upload watch image</span>
+                          <span className="text-xs text-muted-foreground/60">Upload just a photo to skip the form below</span>
                         </>
                       )}
                     </label>
@@ -160,14 +178,14 @@ const ValuationTool = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                   <div>
                     <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                      Brand *
+                      Brand {!selectedImage && "*"}
                     </label>
                     <input
                       type="text"
                       name="brand"
                       value={formData.brand}
                       onChange={handleChange}
-                      required
+                      required={!selectedImage}
                       data-testid="input-brand"
                       className="w-full bg-transparent border-b border-white/20 rounded-none px-0 py-4 focus:border-primary focus:outline-none placeholder:text-white/20 transition-all"
                       placeholder="e.g., Rolex"
@@ -176,14 +194,14 @@ const ValuationTool = () => {
 
                   <div>
                     <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                      Model *
+                      Model {!selectedImage && "*"}
                     </label>
                     <input
                       type="text"
                       name="model"
                       value={formData.model}
                       onChange={handleChange}
-                      required
+                      required={!selectedImage}
                       data-testid="input-model"
                       className="w-full bg-transparent border-b border-white/20 rounded-none px-0 py-4 focus:border-primary focus:outline-none placeholder:text-white/20 transition-all"
                       placeholder="e.g., Submariner"
