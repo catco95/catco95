@@ -89,91 +89,41 @@ def get_currency_symbol(currency: str) -> str:
 def create_valuation_prompt(watch_data: dict, currency: str = "USD") -> str:
     """Create detailed prompt for watch valuation"""
     
-    system_context = """You are Crowntime AI, a specialist watch market intelligence assistant.
-Your role is to provide conservative, investment-grade valuation guidance for luxury and collectible watches.
+    system_context = """You are Crowntime AI, a specialist watch valuation assistant providing conservative market intelligence.
 
-You are NOT an appraiser.
-You do NOT provide certified valuations.
-You do NOT inflate prices based on speculative or unrealistic listings.
+Core principles: Conservative estimates, realized sales over asking prices, explicit uncertainty acknowledgment.
 
-You think like:
-- A seasoned watch dealer
-- A long-term collector
-- A risk-aware investor
-
-Your outputs must be:
-- Clear
-- Conservative
-- Justified
-- Calm in tone
-- Free of hype
-
-You always prefer:
-- Realised sales logic over asking prices
-- Liquidity awareness over rarity hype
-- Condition discipline over brand bias
-
-If information is missing or uncertain, you explicitly say so and reduce confidence."""
+Output: Clear JSON with valuation ranges, retail comparison, confidence score, value drivers, risks, market sentiment, and buy/hold/avoid signal."""
     
     currency_symbol = get_currency_symbol(currency)
     
-    watch_prompt = f"""Analyse the following watch for indicative market value:
+    watch_prompt = f"""Analyze this watch for {currency} valuation:
 
 Brand: {watch_data.get('brand', 'Not specified')}
 Model: {watch_data.get('model', 'Not specified')}
 Reference: {watch_data.get('reference', 'Not specified')}
-Year or Approximate Era: {watch_data.get('year', 'Not specified')}
-Case Size: {watch_data.get('case_size', 'Not specified')}
-Case Material: {watch_data.get('case_material', 'Not specified')}
-Bezel Type: {watch_data.get('bezel_type', 'Not specified')}
-Dial Description: {watch_data.get('dial_description', 'Not specified')}
-Bracelet / Strap: {watch_data.get('bracelet_strap', 'Not specified')}
-Condition (case, dial, bracelet): {watch_data.get('condition', 'Not specified')}
-Box & Papers: {watch_data.get('box_papers', 'Not specified')}
-Known Modifications or Service History: {watch_data.get('modifications', 'Not specified')}
-Location / Market: {watch_data.get('location', 'Not specified')}
+Year: {watch_data.get('year', 'Not specified')}
+Size: {watch_data.get('case_size', 'Not specified')}
+Material: {watch_data.get('case_material', 'Not specified')}
+Condition: {watch_data.get('condition', 'Not specified')}
+Box/Papers: {watch_data.get('box_papers', 'Not specified')}
+Location: {watch_data.get('location', 'Not specified')}
 
-VALUATION INSTRUCTIONS:
-1. Establish a realistic base market value using recent comparable sales logic.
-2. Adjust for:
-   - Condition
-   - Completeness (box/papers)
-   - Rarity or special configuration
-   - Market liquidity
-3. Produce a valuation band:
-   - Low (quick sale / trade level)
-   - Fair (private sale realistic)
-   - High (top of market, patient sale)
+Provide: Low/Fair/High range, retail price (if known), confidence (0-1), 3 value drivers, 3 risks, sentiment, signal with brief justification.
 
-IMPORTANT: Provide all valuations in {currency} ({currency_symbol}). Use current market rates and local market conditions for this currency.
-
-OUTPUT FORMAT (respond in valid JSON):
+JSON format:
 {{
-  "valuation_range": {{
-    "low": "{currency_symbol}X,XXX",
-    "fair": "{currency_symbol}X,XXX",
-    "high": "{currency_symbol}X,XXX"
-  }},
-  "retail_price": "{currency_symbol}X,XXX (current or original retail price if known, otherwise null)",
-  "retail_relationship": "Trading at X% of retail" or "Premium of X% over retail" or null if retail unavailable,
-  "confidence_score": 0.85,
-  "value_drivers": [
-    "bullet point 1",
-    "bullet point 2"
-  ],
-  "risk_factors": [
-    "bullet point 1",
-    "bullet point 2"
-  ],
-  "market_sentiment": "Rising / Stable / Softening",
-  "signal": "Buy / Hold / Avoid",
-  "signal_justification": "1-2 line justification",
-  "full_analysis": "Detailed paragraph about the watch and valuation rationale"
-}}
-
-Tone: Professional, restrained, investor-focused. Never use hype language. Never present certainty where none exists.
-
-Provide ONLY the JSON response, no additional text."""
+  "valuation_range": {{"low": "{currency_symbol}X,XXX", "fair": "{currency_symbol}X,XXX", "high": "{currency_symbol}X,XXX"}},
+  "retail_price": "{currency_symbol}X,XXX or null",
+  "retail_relationship": "Trading at X% of retail or null",
+  "confidence_score": 0.XX,
+  "value_drivers": ["point 1", "point 2", "point 3"],
+  "risk_factors": ["point 1", "point 2", "point 3"],
+  "market_sentiment": "Rising/Stable/Softening",
+  "signal": "Buy/Hold/Avoid",
+  "signal_justification": "1-2 lines",
+  "full_analysis": "2-3 sentence market summary"
+}}"""
     
     return system_context, watch_prompt
 
