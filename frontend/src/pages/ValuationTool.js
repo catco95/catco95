@@ -137,20 +137,24 @@ const ValuationTool = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <BetaBadge valuationsUsed={valuationsUsed} valuationsLimit={5} />
+      
       {/* Header */}
       <header className="backdrop-blur-xl bg-background/70 border-b border-white/10" data-testid="header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <img 
             src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
             alt="Crowntime" 
-            className="h-12 w-auto cursor-pointer"
+            className="h-20 w-auto cursor-pointer"
             onClick={() => navigate("/")}
             data-testid="logo"
             style={{ 
               objectFit: 'cover',
               objectPosition: 'top',
-              maxHeight: '48px',
-              clipPath: 'inset(0 0 35% 0)'
+              clipPath: 'inset(0 0 35% 0)',
+              filter: 'brightness(1.3) contrast(0.9) saturate(0.7)',
+              mixBlendMode: 'lighten',
+              opacity: 0.95
             }}
           />
           <button
