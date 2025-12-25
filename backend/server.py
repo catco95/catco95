@@ -156,8 +156,8 @@ Provide ONLY the JSON response, no additional text."""
 
 @api_router.post("/valuate")
 async def valuate_watch(
-    brand: str = Form(...),
-    model: str = Form(...),
+    brand: str = Form(""),
+    model: str = Form(""),
     reference: str = Form(""),
     year: str = Form(""),
     case_size: str = Form(""),
@@ -172,6 +172,14 @@ async def valuate_watch(
     image: Optional[UploadFile] = File(None)
 ):
     try:
+        # Check if we have either text data or image
+        has_text_data = any([brand, model, reference, year, case_size, case_material, 
+                            bezel_type, dial_description, bracelet_strap, condition, 
+                            box_papers, modifications, location])
+        
+        if not has_text_data and not image:
+            raise HTTPException(status_code=400, detail="Please provide either watch details or upload an image")
+        
         watch_data = {
             "brand": brand,
             "model": model,
@@ -193,27 +201,120 @@ async def valuate_watch(
             raise HTTPException(status_code=500, detail="API key not configured")
         
         session_id = str(uuid.uuid4())
-        system_context, watch_prompt = create_valuation_prompt(watch_data)
         
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=session_id,
-            system_message=system_context
-        )
-        chat.with_model("openai", "gpt-5.2")
-        
-        if image:
+        # Image-only mode
+        if image and not has_text_data:
+            system_context = """You are Crowntime AI, a specialist watch market intelligence assistant.
+Your role is to provide conservative, investment-grade valuation guidance for luxury and collectible watches.
+
+You are NOT an appraiser.
+You do NOT provide certified valuations.
+You do NOT inflate prices based on speculative or unrealistic listings.
+
+You think like:
+- A seasoned watch dealer
+- A long-term collector
+- A risk-aware investor
+
+Your outputs must be:
+- Clear
+- Conservative
+- Justified
+- Calm in tone
+- Free of hype
+
+You always prefer:
+- Realised sales logic over asking prices
+- Liquidity awareness over rarity hype
+- Condition discipline over brand bias
+
+If information is missing or uncertain, you explicitly say so and reduce confidence."""
+
+            image_only_prompt = """Analyse the watch in this image for indicative market value.
+
+Based on what you can see in the image, identify:
+- Brand (if visible)
+- Model (if identifiable)
+- Approximate era/age
+- Case material and condition
+- Dial condition and type
+- Bracelet/strap type
+- Any visible wear or damage
+- Box & papers (if visible in image)
+
+IMPORTANT: You are working from an image only. Be conservative with identifications. If you cannot clearly identify something, say so and adjust confidence accordingly.
+
+VALUATION INSTRUCTIONS:
+1. Establish a realistic base market value using recent comparable sales logic
+2. Adjust for visible condition and completeness
+3. Produce a valuation band:
+   - Low (quick sale / trade level)
+   - Fair (private sale realistic)
+   - High (top of market, patient sale)
+
+OUTPUT FORMAT (respond in valid JSON):
+{
+  "valuation_range": {
+    "low": "$X,XXX",
+    "fair": "$X,XXX",
+    "high": "$X,XXX"
+  },
+  "confidence_score": 0.XX (REDUCE if identification is uncertain),
+  "value_drivers": [
+    "bullet point 1",
+    "bullet point 2"
+  ],
+  "risk_factors": [
+    "bullet point 1 (ALWAYS mention image-only limitations)",
+    "bullet point 2"
+  ],
+  "market_sentiment": "Rising / Stable / Softening",
+  "signal": "Buy / Hold / Avoid",
+  "signal_justification": "1-2 line justification",
+  "full_analysis": "Detailed paragraph about what you can see and valuation rationale. Start by identifying what you can see in the image."
+}
+
+Tone: Professional, restrained, investor-focused. Never use hype language. Never present certainty where none exists.
+
+Provide ONLY the JSON response, no additional text."""
+            
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=session_id,
+                system_message=system_context
+            )
+            chat.with_model("openai", "gpt-5.2")
+            
             image_content = await image.read()
             image_base64 = base64.b64encode(image_content).decode('utf-8')
-            
             image_attachment = ImageContent(image_base64=image_base64)
             
             user_message = UserMessage(
-                text=watch_prompt + "\n\nImage provided: Please assess visible condition conservatively. Do not assume originality unless obvious. Flag uncertainty clearly.",
+                text=image_only_prompt,
                 file_contents=[image_attachment]
             )
         else:
-            user_message = UserMessage(text=watch_prompt)
+            # Text mode (with or without image)
+            system_context, watch_prompt = create_valuation_prompt(watch_data)
+            
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=session_id,
+                system_message=system_context
+            )
+            chat.with_model("openai", "gpt-5.2")
+            
+            if image:
+                image_content = await image.read()
+                image_base64 = base64.b64encode(image_content).decode('utf-8')
+                image_attachment = ImageContent(image_base64=image_base64)
+                
+                user_message = UserMessage(
+                    text=watch_prompt + "\n\nImage provided: Please assess visible condition conservatively. Do not assume originality unless obvious. Flag uncertainty clearly.",
+                    file_contents=[image_attachment]
+                )
+            else:
+                user_message = UserMessage(text=watch_prompt)
         
         response = await chat.send_message(user_message)
         
