@@ -108,6 +108,12 @@ const ValuationTool = () => {
             className="h-12 w-auto cursor-pointer"
             onClick={() => navigate("/")}
             data-testid="logo"
+            style={{ 
+              objectFit: 'cover',
+              objectPosition: 'top',
+              maxHeight: '48px',
+              clipPath: 'inset(0 0 35% 0)'
+            }}
           />
           <button
             onClick={() => navigate("/")}
