@@ -131,7 +131,7 @@ class CrowntimeAPITester:
             })
             return False
         
-        if success and isinstance(response, dict):
+        if success and isinstance(response_data, dict):
             # Verify required fields in response
             required_fields = [
                 'valuation_range', 'confidence_score', 'value_drivers', 
@@ -139,22 +139,22 @@ class CrowntimeAPITester:
                 'signal_justification', 'full_analysis'
             ]
             
-            missing_fields = [field for field in required_fields if field not in response]
+            missing_fields = [field for field in required_fields if field not in response_data]
             if missing_fields:
                 print(f"⚠️  Missing required fields: {missing_fields}")
                 return False
             
             # Verify valuation_range structure
-            if 'valuation_range' in response:
-                val_range = response['valuation_range']
+            if 'valuation_range' in response_data:
+                val_range = response_data['valuation_range']
                 if not all(key in val_range for key in ['low', 'fair', 'high']):
                     print("⚠️  Valuation range missing required keys (low, fair, high)")
                     return False
                 print(f"   Valuation Range: {val_range}")
             
-            print(f"   Confidence: {response.get('confidence_score', 'N/A')}")
-            print(f"   Signal: {response.get('signal', 'N/A')}")
-            print(f"   Market Sentiment: {response.get('market_sentiment', 'N/A')}")
+            print(f"   Confidence: {response_data.get('confidence_score', 'N/A')}")
+            print(f"   Signal: {response_data.get('signal', 'N/A')}")
+            print(f"   Market Sentiment: {response_data.get('market_sentiment', 'N/A')}")
             
             return True
         
