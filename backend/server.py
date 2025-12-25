@@ -180,83 +180,28 @@ async def valuate_watch(
         
         # Image-only mode
         if image and not has_text_data:
-            system_context = """You are Crowntime AI, a specialist watch market intelligence assistant.
-Your role is to provide conservative, investment-grade valuation guidance for luxury and collectible watches.
+            system_context = """Crowntime AI: Conservative watch valuation from images. Explicit uncertainty acknowledgment required. JSON output only."""
 
-You are NOT an appraiser.
-You do NOT provide certified valuations.
-You do NOT inflate prices based on speculative or unrealistic listings.
+            image_only_prompt = f"""Identify and value this watch in {currency}:
 
-You think like:
-- A seasoned watch dealer
-- A long-term collector
-- A risk-aware investor
+Identify: Brand, model, era, material, condition, any visible details.
+Be conservative. State uncertainty explicitly.
 
-Your outputs must be:
-- Clear
-- Conservative
-- Justified
-- Calm in tone
-- Free of hype
+Provide: Low/Fair/High {currency_symbol} range, retail (if known), confidence (reduce for uncertainty), 3 value drivers, 3 risks (mention image limitations), sentiment, signal.
 
-You always prefer:
-- Realised sales logic over asking prices
-- Liquidity awareness over rarity hype
-- Condition discipline over brand bias
-
-If information is missing or uncertain, you explicitly say so and reduce confidence."""
-
-            image_only_prompt = f"""Analyse the watch in this image for indicative market value.
-
-Based on what you can see in the image, identify:
-- Brand (if visible)
-- Model (if identifiable)
-- Approximate era/age
-- Case material and condition
-- Dial condition and type
-- Bracelet/strap type
-- Any visible wear or damage
-- Box & papers (if visible in image)
-
-IMPORTANT: You are working from an image only. Be conservative with identifications. If you cannot clearly identify something, say so and adjust confidence accordingly.
-
-VALUATION INSTRUCTIONS:
-1. Establish a realistic base market value using recent comparable sales logic
-2. Adjust for visible condition and completeness
-3. Produce a valuation band:
-   - Low (quick sale / trade level)
-   - Fair (private sale realistic)
-   - High (top of market, patient sale)
-
-IMPORTANT: Provide all valuations in {currency} ({currency_symbol}). Use current market rates and local market conditions for this currency.
-
-OUTPUT FORMAT (respond in valid JSON):
+JSON:
 {{
-  "valuation_range": {{
-    "low": "{currency_symbol}X,XXX",
-    "fair": "{currency_symbol}X,XXX",
-    "high": "{currency_symbol}X,XXX"
-  }},
-  "retail_price": "{currency_symbol}X,XXX (if identifiable, otherwise null)",
-  "retail_relationship": "Trading at X% of retail" or "Premium of X% over retail" or null if retail unavailable,
-  "confidence_score": "0.XX (REDUCE if identification is uncertain)",
-  "value_drivers": [
-    "bullet point 1",
-    "bullet point 2"
-  ],
-  "risk_factors": [
-    "bullet point 1 (ALWAYS mention image-only limitations)",
-    "bullet point 2"
-  ],
-  "market_sentiment": "Rising / Stable / Softening",
-  "signal": "Buy / Hold / Avoid",
-  "signal_justification": "1-2 line justification",
-  "full_analysis": "Detailed paragraph about what you can see and valuation rationale. Start by identifying what you can see in the image."
-}}
-
-Tone: Professional, restrained, investor-focused. Never use hype language. Never present certainty where none exists.
-
-Provide ONLY the JSON response, no additional text."""
+  "valuation_range": {{"low": "{currency_symbol}X", "fair": "{currency_symbol}X", "high": "{currency_symbol}X"}},
+  "retail_price": "{currency_symbol}X or null",
+  "retail_relationship": "X% of retail or null",
+  "confidence_score": 0.XX,
+  "value_drivers": ["point 1", "point 2", "point 3"],
+  "risk_factors": ["Image-only limitation", "point 2", "point 3"],
+  "market_sentiment": "Rising/Stable/Softening",
+  "signal": "Buy/Hold/Avoid",
+  "signal_justification": "brief",
+  "full_analysis": "Start with what's visible in image. 2-3 sentences."
+}}"""
             
             chat = LlmChat(
                 api_key=api_key,
