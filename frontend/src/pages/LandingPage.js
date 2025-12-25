@@ -2,12 +2,16 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Watch, TrendingUp, Shield, BarChart3 } from "lucide-react";
+import BetaBadge from "../components/BetaBadge";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const valuationsUsed = parseInt(localStorage.getItem('crowntime_valuations_used') || '0');
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <BetaBadge valuationsUsed={valuationsUsed} valuationsLimit={5} />
+      
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -18,14 +22,16 @@ const LandingPage = () => {
           <img 
             src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
             alt="Crowntime" 
-            className="h-12 w-auto cursor-pointer"
+            className="h-20 w-auto cursor-pointer"
             onClick={() => navigate("/")}
             data-testid="logo"
             style={{ 
               objectFit: 'cover',
               objectPosition: 'top',
-              maxHeight: '48px',
-              clipPath: 'inset(0 0 35% 0)'
+              clipPath: 'inset(0 0 35% 0)',
+              filter: 'brightness(1.3) contrast(0.9) saturate(0.7)',
+              mixBlendMode: 'lighten',
+              opacity: 0.95
             }}
           />
           <button
