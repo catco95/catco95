@@ -123,7 +123,7 @@ JSON format:
   "signal": "Buy/Hold/Avoid",
   "signal_justification": "1-2 lines",
   "full_analysis": "2-3 sentence market summary"
-}}"""
+}}""""""
     
     return system_context, watch_prompt
 
