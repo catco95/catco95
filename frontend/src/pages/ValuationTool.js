@@ -433,11 +433,11 @@ const ValuationTool = () => {
               {/* Valuation Header */}
               <div className="bg-card/50 backdrop-blur-sm border border-white/5 rounded-sm p-8 md:p-12 mb-8">
                 <div className="text-center mb-8">
-                  <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Valuation Range</div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Market Valuation Range</div>
                   <div className="font-heading text-5xl md:text-6xl tracking-tight text-primary mb-6" data-testid="valuation-fair-price">
                     {result.valuation_range.fair}
                   </div>
-                  <div className="flex justify-center gap-8 text-sm tabular-nums">
+                  <div className="flex justify-center gap-8 text-sm tabular-nums mb-6">
                     <div>
                       <div className="text-muted-foreground mb-1">Low</div>
                       <div className="font-semibold" data-testid="valuation-low-price">{result.valuation_range.low}</div>
@@ -447,6 +447,21 @@ const ValuationTool = () => {
                       <div className="font-semibold" data-testid="valuation-high-price">{result.valuation_range.high}</div>
                     </div>
                   </div>
+                  
+                  {/* Retail Price */}
+                  {result.retail_price && (
+                    <div className="pt-6 border-t border-white/10">
+                      <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Recommended Retail Price</div>
+                      <div className="text-2xl font-semibold text-foreground mb-2" data-testid="retail-price">
+                        {result.retail_price}
+                      </div>
+                      {result.retail_relationship && (
+                        <div className="text-sm text-muted-foreground" data-testid="retail-relationship">
+                          {result.retail_relationship}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Confidence & Sentiment */}
