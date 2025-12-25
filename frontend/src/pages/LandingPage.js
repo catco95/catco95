@@ -19,20 +19,20 @@ const LandingPage = () => {
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-              alt="Crowntime" 
-              className="h-20 w-auto"
-              style={{ 
-                objectFit: 'cover',
-                objectPosition: 'top',
-                clipPath: 'inset(0 0 35% 0)',
-                filter: 'brightness(1.5) contrast(1.1)',
-                mixBlendMode: 'screen'
-              }}
-            />
-            <span className="text-xs text-primary font-semibold" style={{ marginTop: '-40px' }}>TM</span>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
+            <div className="bg-[#1a4d3c] px-4 py-3 rounded-sm flex items-center justify-center">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
+                alt="Crowntime" 
+                className="h-16 w-auto"
+                style={{ 
+                  objectFit: 'cover',
+                  objectPosition: 'top',
+                  clipPath: 'inset(0 0 35% 0)'
+                }}
+              />
+            </div>
+            <span className="text-xs text-primary font-bold">TM</span>
           </div>
           <button
             onClick={() => navigate("/valuate")}
@@ -196,20 +196,20 @@ const LandingPage = () => {
       <footer className="border-t border-white/10 py-12" data-testid="footer">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center gap-6">
-            <div className="flex items-center gap-1">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
-                alt="Crowntime" 
-                className="h-28 w-auto"
-                style={{ 
-                  objectFit: 'cover',
-                  objectPosition: 'top',
-                  clipPath: 'inset(0 0 35% 0)',
-                  filter: 'brightness(1.5) contrast(1.1)',
-                  mixBlendMode: 'screen'
-                }}
-              />
-              <span className="text-sm text-primary font-semibold" style={{ marginTop: '-56px' }}>TM</span>
+            <div className="flex items-center gap-2">
+              <div className="bg-[#1a4d3c] px-6 py-4 rounded-sm flex items-center justify-center">
+                <img 
+                  src="https://customer-assets.emergentagent.com/job_crown-valuer/artifacts/5rhwovc5_4550EE2A-9235-4151-9654-A005E42CC362.png" 
+                  alt="Crowntime" 
+                  className="h-24 w-auto"
+                  style={{ 
+                    objectFit: 'cover',
+                    objectPosition: 'top',
+                    clipPath: 'inset(0 0 35% 0)'
+                  }}
+                />
+              </div>
+              <span className="text-sm text-primary font-bold">TM</span>
             </div>
             
             {/* Legal Disclaimer */}
