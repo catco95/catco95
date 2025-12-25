@@ -154,6 +154,8 @@ OUTPUT FORMAT (respond in valid JSON):
     "fair": "{currency_symbol}X,XXX",
     "high": "{currency_symbol}X,XXX"
   }},
+  "retail_price": "{currency_symbol}X,XXX (current or original retail price if known, otherwise null)",
+  "retail_relationship": "Trading at X% of retail" or "Premium of X% over retail" or null if retail unavailable,
   "confidence_score": 0.85,
   "value_drivers": [
     "bullet point 1",
