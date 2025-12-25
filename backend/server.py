@@ -252,7 +252,7 @@ OUTPUT FORMAT (respond in valid JSON):
   "signal": "Buy / Hold / Avoid",
   "signal_justification": "1-2 line justification",
   "full_analysis": "Detailed paragraph about what you can see and valuation rationale. Start by identifying what you can see in the image."
-}
+}}
 
 Tone: Professional, restrained, investor-focused. Never use hype language. Never present certainty where none exists.
 
