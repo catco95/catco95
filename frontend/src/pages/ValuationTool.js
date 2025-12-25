@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Upload, Loader2, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import axios from "axios";
+import BetaBadge from "../components/BetaBadge";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -14,6 +15,9 @@ const ValuationTool = () => {
   const [result, setResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [valuationsUsed, setValuationsUsed] = useState(
+    parseInt(localStorage.getItem('crowntime_valuations_used') || '0')
+  );
 
   const [formData, setFormData] = useState({
     brand: "",
