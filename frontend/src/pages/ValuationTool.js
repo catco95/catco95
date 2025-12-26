@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Upload, Loader2, ArrowLeft, TrendingUp, TrendingDown, Minus, Camera } from "lucide-react";
 import axios from "axios";
 import BetaBadge from "../components/BetaBadge";
 import CrowntimeLogo from "../components/CrowntimeLogo";
+import CameraCapture from "../components/CameraCapture";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -16,6 +17,8 @@ const ValuationTool = () => {
   const [result, setResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [autoFilledFields, setAutoFilledFields] = useState([]);
   const [valuationsUsed, setValuationsUsed] = useState(
     parseInt(localStorage.getItem('crowntime_valuations_used') || '0')
   );
@@ -51,6 +54,35 @@ const ValuationTool = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleDetectionComplete = (detectedDetails) => {
+    // Auto-fill form with detected details
+    const fieldMap = {
+      brand: 'brand',
+      model: 'model',
+      reference: 'reference',
+      year: 'year',
+      case_size: 'case_size',
+      case_material: 'case_material',
+      bezel_type: 'bezel_type',
+      dial_description: 'dial_description',
+      bracelet_strap: 'bracelet_strap'
+    };
+
+    const autoFilled = [];
+    const newFormData = { ...formData };
+
+    Object.entries(detectedDetails).forEach(([key, data]) => {
+      if (fieldMap[key] && data.value) {
+        newFormData[fieldMap[key]] = data.value;
+        autoFilled.push(fieldMap[key]);
+      }
+    });
+
+    setFormData(newFormData);
+    setAutoFilledFields(autoFilled);
+    setShowCamera(false);
   };
 
   const handleSubmit = async (e) => {
@@ -91,6 +123,11 @@ const ValuationTool = () => {
       Object.keys(formData).forEach(key => {
         formDataToSend.append(key, formData[key]);
       });
+      
+      // Add auto-filled fields tracking
+      if (autoFilledFields.length > 0) {
+        formDataToSend.append('auto_filled_fields', JSON.stringify(autoFilledFields));
+      }
       
       if (selectedImage) {
         formDataToSend.append('image', selectedImage);
@@ -139,6 +176,13 @@ const ValuationTool = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <BetaBadge valuationsUsed={valuationsUsed} valuationsLimit={5} />
+      
+      {showCamera && (
+        <CameraCapture 
+          onDetectionComplete={handleDetectionComplete}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
       
       {/* Header */}
       <header className="backdrop-blur-xl bg-background/70 border-b border-white/10" data-testid="header">
