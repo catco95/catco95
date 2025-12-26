@@ -91,7 +91,23 @@ def create_valuation_prompt(watch_data: dict, currency: str = "USD") -> str:
     
     system_context = """You are Crowntime AI, a specialist watch valuation assistant providing conservative market intelligence.
 
-Core principles: Conservative estimates, realized sales over asking prices, explicit uncertainty acknowledgment.
+Core principles: 
+- Conservative estimates based on realized sales, not asking prices
+- Explicit uncertainty acknowledgment
+- Dealer trade perspective with realistic private sale outcomes
+
+CRITICAL RARITY RULES:
+- NEVER treat rarity claims at face value
+- Only apply rarity premiums if the configuration is widely recognized by the collector market AND materially affects liquidity
+- If rarity is claimed but not clearly verifiable: treat as NEUTRAL or flag as RISK FACTOR, never as value driver
+- Rarity must be proven, not assumed
+
+VALUATION LEVELS:
+- Low = Trade or quick-sale anchoring levels (what a dealer would pay)
+- Fair = Achievable private sale pricing within reasonable timeframe
+- High = Patient sale outcomes (NOT speculative listings)
+
+Think like a dealer: Price conservatively, factor in movement/liquidity, condition must be clearly supported.
 
 Output: Clear JSON with valuation ranges, retail comparison, confidence score, value drivers, risks, market sentiment, and buy/hold/avoid signal."""
     
@@ -109,7 +125,13 @@ Condition: {watch_data.get('condition', 'Not specified')}
 Box/Papers: {watch_data.get('box_papers', 'Not specified')}
 Location: {watch_data.get('location', 'Not specified')}
 
-Provide: Low/Fair/High range, retail price (if known), confidence (0-1), 3 value drivers, 3 risks, sentiment, signal with brief justification.
+Apply STRICT rarity discipline:
+- If any special configuration is mentioned, verify if it's widely recognized
+- Unverified rarity = neutral or risk factor, NOT value driver
+- Focus on liquidity and realistic dealer trade levels
+
+Provide: Low (trade/quick sale), Fair (realistic private sale), High (patient sale, not speculative)
+Include retail price if known, confidence (0-1), 3 value drivers, 3 risks, sentiment, signal with brief justification.
 
 JSON format:
 {{
@@ -122,7 +144,7 @@ JSON format:
   "market_sentiment": "Rising/Stable/Softening",
   "signal": "Buy/Hold/Avoid",
   "signal_justification": "1-2 lines",
-  "full_analysis": "2-3 sentence market summary"
+  "full_analysis": "2-3 sentence market summary with dealer perspective"
 }}"""
     
     return system_context, watch_prompt
@@ -180,14 +202,32 @@ async def valuate_watch(
         
         # Image-only mode
         if image and not has_text_data:
-            system_context = """Crowntime AI: Conservative watch valuation from images. Explicit uncertainty acknowledgment required. JSON output only."""
+            system_context = """Crowntime AI: Conservative watch valuation from images.
+
+CRITICAL RULES:
+- Explicit uncertainty acknowledgment required
+- NEVER assume rarity from image alone - flag as uncertain
+- If special features visible but not verifiable, treat as NEUTRAL or risk factor
+- Focus on what's clearly visible: condition, authenticity markers, standard configuration
+
+VALUATION LEVELS:
+- Low = Trade/quick sale (dealer would pay)
+- Fair = Realistic private sale
+- High = Patient sale (NOT speculative)
+
+JSON output only."""
 
             image_only_prompt = f"""Identify and value this watch in {currency}:
 
-Identify: Brand, model, era, material, condition, any visible details.
-Be conservative. State uncertainty explicitly.
+What you can clearly see: Brand, model, era, material, condition, visible details.
 
-Provide: Low/Fair/High {currency_symbol} range, retail (if known), confidence (reduce for uncertainty), 3 value drivers, 3 risks (mention image limitations), sentiment, signal.
+STRICT RARITY DISCIPLINE:
+- Do NOT assume special/rare based on appearance alone
+- If unsure about configuration, state explicitly and reduce confidence
+- Unknown provenance = risk factor, not value driver
+
+Provide: Low (trade), Fair (private sale), High (patient sale) in {currency_symbol}
+Retail if known, confidence (reduce for ANY uncertainty), 3 value drivers, 3 risks (MUST mention image-only limitations + unverified claims), sentiment, signal.
 
 JSON:
 {{
@@ -196,11 +236,11 @@ JSON:
   "retail_relationship": "X% of retail or null",
   "confidence_score": 0.XX,
   "value_drivers": ["point 1", "point 2", "point 3"],
-  "risk_factors": ["Image-only limitation", "point 2", "point 3"],
+  "risk_factors": ["Image-only limitation", "Cannot verify claims", "point 3"],
   "market_sentiment": "Rising/Stable/Softening",
   "signal": "Buy/Hold/Avoid",
   "signal_justification": "brief",
-  "full_analysis": "Start with what's visible in image. 2-3 sentences."
+  "full_analysis": "Start with visible elements. Conservative dealer perspective. 2-3 sentences."
 }}"""
             
             chat = LlmChat(
