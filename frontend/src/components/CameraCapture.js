@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Camera, X, Check, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
@@ -15,26 +15,34 @@ const CameraCapture = ({ onDetectionComplete, onClose }) => {
 
   const startCamera = async () => {
     try {
+      setError('');
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment', width: 1920, height: 1080 } 
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
       }
     } catch (err) {
-      setError('Camera access denied. Please enable camera permissions.');
+      console.error('Camera error:', err);
+      setError('Camera access denied. Please enable camera permissions in your browser settings.');
     }
   };
 
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
   };
 
   const capturePhoto = () => {
     const video = videoRef.current;
+    if (!video || !video.videoWidth) {
+      setError('Camera not ready. Please try again.');
+      return;
+    }
+    
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -56,13 +64,15 @@ const CameraCapture = ({ onDetectionComplete, onClose }) => {
       formData.append('image', capturedImage);
       
       const response = await axios.post(`${API}/detect-watch-details`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 30000
       });
       
       setDetectedDetails(response.data.detected_details);
       setMode('results');
     } catch (err) {
-      setError('Detection failed. Please try again.');
+      console.error('Detection error:', err);
+      setError('Detection failed. Please try again or upload manually.');
       setMode('preview');
     }
   };
@@ -70,8 +80,8 @@ const CameraCapture = ({ onDetectionComplete, onClose }) => {
   const retake = () => {
     setCapturedImage(null);
     setDetectedDetails(null);
+    setError('');
     setMode('capture');
-    startCamera();
   };
 
   const confirmDetection = () => {
@@ -87,10 +97,23 @@ const CameraCapture = ({ onDetectionComplete, onClose }) => {
     return badges[confidence] || badges.uncertain;
   };
 
-  useState(() => {
-    if (mode === 'capture') startCamera();
-    return () => stopCamera();
+  // Initialize camera when component mounts or mode changes to capture
+  useEffect(() => {
+    if (mode === 'capture') {
+      startCamera();
+    }
+    
+    return () => {
+      stopCamera();
+    };
   }, [mode]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
