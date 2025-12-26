@@ -336,6 +336,103 @@ CRITICAL REMINDERS:
     
     return system_context, watch_prompt
 
+@api_router.post("/detect-watch-details")
+async def detect_watch_details(
+    image: UploadFile = File(...)
+):
+    """Auto-detect watch details from image for user verification"""
+    try:
+        api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        session_id = str(uuid.uuid4())
+        
+        detection_prompt = """You are analyzing a watch image to extract OBSERVABLE details only.
+
+AUTO-FILL EXTRACTION RULES:
+
+You MAY auto-fill (if clearly visible):
+- Brand (if logo or text clearly visible)
+- Model family (if widely recognizable)
+- Dial color and style (descriptive only - e.g., "Black sunburst", "White")
+- Bracelet or strap type (if visible - e.g., "Metal bracelet", "Leather strap")
+- Bezel type (if visible - e.g., "Smooth", "Fluted", "Ceramic insert")
+
+You MAY suggest with uncertainty:
+- Reference number (if partially visible)
+- Case material (e.g., "Appears to be stainless steel")
+- Approximate era (e.g., "Likely 2010s based on style")
+
+You MUST NOT auto-fill:
+- Exact production year
+- Authenticity or originality claims
+- Service history
+- Box & papers presence
+
+CONFIDENCE LEVELS:
+- "detected": Clearly visible, high confidence
+- "suggested": Reasonable inference, needs verification
+- "uncertain": Possible but unclear, low confidence
+
+If unclear or uncertain: Mark as "uncertain" or omit entirely.
+
+Respond in JSON format ONLY:
+{
+  "brand": {"value": "Brand Name", "confidence": "detected/suggested/uncertain"},
+  "model": {"value": "Model Name", "confidence": "detected/suggested/uncertain"},
+  "dial_description": {"value": "Description", "confidence": "detected/suggested/uncertain"},
+  "bracelet_strap": {"value": "Type", "confidence": "detected/suggested/uncertain"},
+  "bezel_type": {"value": "Type", "confidence": "detected/suggested/uncertain"},
+  "case_material": {"value": "Material", "confidence": "suggested/uncertain"},
+  "reference": {"value": "Ref", "confidence": "suggested/uncertain"},
+  "year": {"value": "Era", "confidence": "suggested/uncertain"},
+  "case_size": {"value": "Approx size", "confidence": "suggested/uncertain"}
+}
+
+Omit fields if not visible or uncertain. Be conservative."""
+
+        image_content = await image.read()
+        image_base64 = base64.b64encode(image_content).decode('utf-8')
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=session_id,
+            system_message="You are a watch detail extraction assistant. Respond only in JSON format."
+        )
+        chat.with_model("openai", "gpt-5.2")
+        
+        image_attachment = ImageContent(image_base64=image_base64)
+        user_message = UserMessage(
+            text=detection_prompt,
+            file_contents=[image_attachment]
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        # Parse response
+        import json
+        response_clean = response.strip()
+        if response_clean.startswith('```json'):
+            response_clean = response_clean[7:]
+        if response_clean.startswith('```'):
+            response_clean = response_clean[3:]
+        if response_clean.endswith('```'):
+            response_clean = response_clean[:-3]
+        response_clean = response_clean.strip()
+        
+        detected_details = json.loads(response_clean)
+        
+        return {
+            "success": True,
+            "detected_details": detected_details,
+            "message": "Details detected. Please verify before valuation."
+        }
+        
+    except Exception as e:
+        logging.error(f"Detection error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/valuate")
 async def valuate_watch(
     brand: str = Form(""),
