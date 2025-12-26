@@ -12,6 +12,8 @@ import uuid
 from datetime import datetime, timezone
 import base64
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+import json
+import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -86,7 +88,39 @@ def get_currency_symbol(currency: str) -> str:
     }
     return symbols.get(currency, currency)
 
-def create_valuation_prompt(watch_data: dict, currency: str = "USD") -> str:
+async def search_market_data(brand: str, model: str, reference: str = "") -> str:
+    """Search web for recent watch sales and market data"""
+    try:
+        search_query = f"{brand} {model} {reference} watch recent sales prices market value 2024 2025".strip()
+        
+        # Use web search to get market intelligence
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(
+                "https://api.tavily.com/search",
+                json={
+                    "api_key": os.environ.get("TAVILY_API_KEY", "tvly-demo-key"),
+                    "query": search_query,
+                    "search_depth": "basic",
+                    "max_results": 5,
+                    "include_domains": ["chrono24.com", "watchbox.com", "hodinkee.com", "watchbase.com", "chrono-hunter.com"]
+                },
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                results = response.json()
+                if results.get("results"):
+                    market_intel = "\n\n".join([
+                        f"Source: {r.get('url', 'N/A')}\n{r.get('content', '')[:300]}"
+                        for r in results["results"][:3]
+                    ])
+                    return f"Recent Market Data:\n{market_intel}"
+    except Exception as e:
+        logging.warning(f"Market search failed: {e}")
+    
+    return "Market data unavailable - proceed with caution and reduce confidence."
+
+def create_valuation_prompt(watch_data: dict, currency: str = "USD", market_data: str = "") -> str:
     """Create detailed prompt for watch valuation"""
     
     system_context = """You are Crowntime AI, a specialist watch valuation assistant providing conservative market intelligence.
