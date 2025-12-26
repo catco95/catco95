@@ -174,12 +174,99 @@ const HomePage = () => {
         confirmed_fields: confirmedFields
       });
       setValuation(response.data);
+      
+      // Save to history
+      try {
+        await axios.post(`${API}/scan-history`, {
+          watch: watchData,
+          valuation: response.data
+        });
+        // Refresh history
+        const historyRes = await axios.get(`${API}/scan-history?limit=10`);
+        setScanHistory(historyRes.data || []);
+      } catch (historyError) {
+        console.error("Failed to save to history:", historyError);
+      }
     } catch (error) {
       console.error("Valuation error:", error);
       toast.error("Failed to calculate valuation");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Save scan to history
+  const saveScanToHistory = async () => {
+    if (!watchData.brand) return;
+    
+    try {
+      await axios.post(`${API}/scan-history`, {
+        watch: watchData,
+        valuation: valuation
+      });
+      const historyRes = await axios.get(`${API}/scan-history?limit=10`);
+      setScanHistory(historyRes.data || []);
+      toast.success("Scan saved to history");
+    } catch (error) {
+      console.error("Failed to save scan:", error);
+    }
+  };
+
+  // Delete scan from history
+  const deleteScan = async (scanId) => {
+    try {
+      await axios.delete(`${API}/scan-history/${scanId}`);
+      setScanHistory(prev => prev.filter(s => s.id !== scanId));
+      toast.success("Scan removed from history");
+    } catch (error) {
+      console.error("Failed to delete scan:", error);
+    }
+  };
+
+  // Clear all history
+  const clearHistory = async () => {
+    try {
+      await axios.delete(`${API}/scan-history`);
+      setScanHistory([]);
+      toast.success("History cleared");
+    } catch (error) {
+      console.error("Failed to clear history:", error);
+    }
+  };
+
+  // Load scan from history
+  const loadScanFromHistory = (scan) => {
+    setWatchData({
+      brand: scan.brand || "",
+      model_family: scan.model_family || "",
+      dial_color: scan.dial_color || "",
+      bezel_type: scan.bezel_type || "",
+      bracelet_type: scan.bracelet_type || "",
+      reference_number: "",
+      condition: "Very Good",
+      box_papers: false
+    });
+    setFieldStatus({
+      brand: "manual",
+      model_family: "manual",
+      dial_color: "manual",
+      bezel_type: "manual",
+      bracelet_type: "manual"
+    });
+    setConfirmedFields([]);
+    if (scan.valuation_fair) {
+      setValuation({
+        low_estimate: scan.valuation_low,
+        fair_estimate: scan.valuation_fair,
+        high_estimate: scan.valuation_high,
+        confidence_level: scan.confidence_level || "low",
+        confidence_percentage: 0,
+        calibration_mode: "Market-Neutral",
+        notes: ["Loaded from history - recalculate for current values"],
+        breakdown: {}
+      });
+    }
+    toast.success("Loaded from history");
   };
 
   // Reset form
