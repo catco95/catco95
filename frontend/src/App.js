@@ -64,6 +64,7 @@ const HomePage = () => {
           brands: brandsRes.data.brands,
           conditions: conditionsRes.data.conditions
         }));
+        setScanHistory(historyRes.data || []);
       } catch (error) {
         console.error("Failed to fetch reference data:", error);
       }
