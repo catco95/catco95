@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 import base64
 import json
-from emergentintegrations.llm.openai import chat, Models
+from emergentintegrations.llm.openai import LlmChat, ImageContent, UserMessage
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
