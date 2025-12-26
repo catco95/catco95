@@ -375,7 +375,7 @@ Respond with JSON only."""
             api_key=EMERGENT_KEY,
             session_id=str(uuid.uuid4()),
             system_message=system_prompt
-        ).with_model("gpt-4o")
+        ).with_model("openai", "gpt-4o")
         
         # Create user message with image
         image_content = ImageContent(image_base64=image_base64)
