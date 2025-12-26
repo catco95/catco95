@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ArrowLeft, TrendingUp, TrendingDown, Minus, Camera } from "lucide-react";
+import { Upload, Loader2, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import axios from "axios";
 import BetaBadge from "../components/BetaBadge";
 import CrowntimeLogo from "../components/CrowntimeLogo";
-import CameraCapture from "../components/CameraCapture";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -17,8 +16,6 @@ const ValuationTool = () => {
   const [result, setResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [showCamera, setShowCamera] = useState(false);
-  const [autoFilledFields, setAutoFilledFields] = useState([]);
   const [valuationsUsed, setValuationsUsed] = useState(
     parseInt(localStorage.getItem('crowntime_valuations_used') || '0')
   );
@@ -54,35 +51,6 @@ const ValuationTool = () => {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleDetectionComplete = (detectedDetails) => {
-    // Auto-fill form with detected details
-    const fieldMap = {
-      brand: 'brand',
-      model: 'model',
-      reference: 'reference',
-      year: 'year',
-      case_size: 'case_size',
-      case_material: 'case_material',
-      bezel_type: 'bezel_type',
-      dial_description: 'dial_description',
-      bracelet_strap: 'bracelet_strap'
-    };
-
-    const autoFilled = [];
-    const newFormData = { ...formData };
-
-    Object.entries(detectedDetails).forEach(([key, data]) => {
-      if (fieldMap[key] && data.value) {
-        newFormData[fieldMap[key]] = data.value;
-        autoFilled.push(fieldMap[key]);
-      }
-    });
-
-    setFormData(newFormData);
-    setAutoFilledFields(autoFilled);
-    setShowCamera(false);
   };
 
   const handleSubmit = async (e) => {
@@ -123,11 +91,6 @@ const ValuationTool = () => {
       Object.keys(formData).forEach(key => {
         formDataToSend.append(key, formData[key]);
       });
-      
-      // Add auto-filled fields tracking
-      if (autoFilledFields.length > 0) {
-        formDataToSend.append('auto_filled_fields', JSON.stringify(autoFilledFields));
-      }
       
       if (selectedImage) {
         formDataToSend.append('image', selectedImage);
@@ -177,13 +140,6 @@ const ValuationTool = () => {
     <div className="min-h-screen bg-background text-foreground">
       <BetaBadge valuationsUsed={valuationsUsed} valuationsLimit={5} />
       
-      {showCamera && (
-        <CameraCapture 
-          onDetectionComplete={handleDetectionComplete}
-          onClose={() => setShowCamera(false)}
-        />
-      )}
-      
       {/* Header */}
       <header className="backdrop-blur-xl bg-background/70 border-b border-white/10" data-testid="header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
@@ -226,23 +182,9 @@ const ValuationTool = () => {
                 {/* Image Upload */}
                 <div className="mb-12">
                   <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-4">
-                    Watch Image (Optional - or use camera)
+                    Watch Image (Optional - or use image-only mode)
                   </label>
-                  
-                  <div className="flex gap-4 mb-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowCamera(true)}
-                      className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-white/20 rounded-sm py-4 hover:border-primary/50 transition-all"
-                    >
-                      <Camera className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Use Camera</span>
-                    </button>
-                    
-                    <label htmlFor="image-upload" className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-white/20 rounded-sm py-4 cursor-pointer hover:border-primary/50 transition-all">
-                      <Upload className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Upload File</span>
-                    </label>
+                  <div className="relative">
                     <input
                       type="file"
                       accept="image/*"
@@ -251,21 +193,26 @@ const ValuationTool = () => {
                       className="hidden"
                       id="image-upload"
                     />
+                    <label
+                      htmlFor="image-upload"
+                      className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/20 rounded-sm cursor-pointer hover:border-primary/50 transition-all"
+                    >
+                      {imagePreview ? (
+                        <div className="relative w-full h-full">
+                          <img src={imagePreview} alt="Preview" className="h-full w-full object-contain p-4" />
+                          <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-sm">
+                            Image uploaded ✓
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="w-12 h-12 text-muted-foreground mb-4" />
+                          <span className="text-sm text-muted-foreground mb-2">Click to upload watch image</span>
+                          <span className="text-xs text-muted-foreground/60">Upload just a photo to skip the form below</span>
+                        </>
+                      )}
+                    </label>
                   </div>
-                  
-                  {imagePreview && (
-                    <div className="relative w-full h-48 border border-white/20 rounded-sm overflow-hidden">
-                      <img src={imagePreview} alt="Preview" className="h-full w-full object-contain" />
-                    </div>
-                  )}
-                  
-                  {autoFilledFields.length > 0 && (
-                    <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-sm p-3">
-                      <p className="text-xs text-yellow-400">
-                        <span className="font-semibold">{autoFilledFields.length} fields auto-filled from camera.</span> Please verify before submission.
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 {/* Currency Selection */}
