@@ -1,38 +1,306 @@
-import { useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+
+// Components
+import Header from "@/components/Header";
+import WatchForm from "@/components/WatchForm";
+import ValuationDisplay from "@/components/ValuationDisplay";
+import CameraScanner from "@/components/CameraScanner";
+import CalibrationSelector from "@/components/CalibrationSelector";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+const HomePage = () => {
+  // State management
+  const [watchData, setWatchData] = useState({
+    brand: "",
+    model_family: "",
+    dial_color: "",
+    bezel_type: "",
+    bracelet_type: "",
+    reference_number: "",
+    condition: "Very Good",
+    box_papers: false
+  });
+  
+  const [fieldStatus, setFieldStatus] = useState({
+    brand: "manual",
+    model_family: "manual",
+    dial_color: "manual",
+    bezel_type: "manual",
+    bracelet_type: "manual"
+  });
+  
+  const [confirmedFields, setConfirmedFields] = useState([]);
+  const [valuation, setValuation] = useState(null);
+  const [calibrationMode, setCalibrationMode] = useState("market_neutral");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [referenceData, setReferenceData] = useState({
+    brands: [],
+    models: [],
+    attributes: {},
+    conditions: []
+  });
+
+  // Fetch reference data
+  useEffect(() => {
+    const fetchReferenceData = async () => {
+      try {
+        const [brandsRes, conditionsRes] = await Promise.all([
+          axios.get(`${API}/watch-data/brands`),
+          axios.get(`${API}/watch-data/conditions`)
+        ]);
+        setReferenceData(prev => ({
+          ...prev,
+          brands: brandsRes.data.brands,
+          conditions: conditionsRes.data.conditions
+        }));
+      } catch (error) {
+        console.error("Failed to fetch reference data:", error);
+      }
+    };
+    fetchReferenceData();
+  }, []);
+
+  // Fetch models when brand changes
+  useEffect(() => {
+    const fetchModels = async () => {
+      if (watchData.brand) {
+        try {
+          const res = await axios.get(`${API}/watch-data/models/${watchData.brand}`);
+          setReferenceData(prev => ({ ...prev, models: res.data.models }));
+        } catch (error) {
+          console.error("Failed to fetch models:", error);
+        }
+      } else {
+        setReferenceData(prev => ({ ...prev, models: [], attributes: {} }));
+      }
+    };
+    fetchModels();
+  }, [watchData.brand]);
+
+  // Fetch attributes when model changes
+  useEffect(() => {
+    const fetchAttributes = async () => {
+      if (watchData.brand && watchData.model_family) {
+        try {
+          const res = await axios.get(`${API}/watch-data/attributes/${watchData.brand}/${watchData.model_family}`);
+          setReferenceData(prev => ({ ...prev, attributes: res.data }));
+        } catch (error) {
+          console.error("Failed to fetch attributes:", error);
+        }
+      } else {
+        setReferenceData(prev => ({ ...prev, attributes: {} }));
+      }
+    };
+    fetchAttributes();
+  }, [watchData.brand, watchData.model_family]);
+
+  // Handle field change
+  const handleFieldChange = useCallback((field, value) => {
+    setWatchData(prev => ({ ...prev, [field]: value }));
+    
+    // If field was detected but user manually changes it, update status
+    if (fieldStatus[field] === "detected" || fieldStatus[field] === "suggested") {
+      setFieldStatus(prev => ({ ...prev, [field]: "manual" }));
+      setConfirmedFields(prev => prev.filter(f => f !== field));
+    }
+  }, [fieldStatus]);
+
+  // Handle field confirmation
+  const handleConfirmField = useCallback((field) => {
+    if (!confirmedFields.includes(field)) {
+      setConfirmedFields(prev => [...prev, field]);
+      setFieldStatus(prev => ({ ...prev, [field]: "confirmed" }));
+      toast.success(`${field.replace('_', ' ')} confirmed`);
+    }
+  }, [confirmedFields]);
+
+  // Handle field rejection
+  const handleRejectField = useCallback((field) => {
+    setWatchData(prev => ({ ...prev, [field]: "" }));
+    setFieldStatus(prev => ({ ...prev, [field]: "manual" }));
+    setConfirmedFields(prev => prev.filter(f => f !== field));
+    toast.info(`${field.replace('_', ' ')} cleared`);
+  }, []);
+
+  // Handle camera scan results
+  const handleScanComplete = useCallback((detectedFields) => {
+    const newWatchData = { ...watchData };
+    const newFieldStatus = { ...fieldStatus };
+    
+    detectedFields.forEach(field => {
+      const fieldName = field.field_name;
+      if (field.confidence >= 0.5) {
+        newWatchData[fieldName] = field.detected_value;
+        newFieldStatus[fieldName] = field.confidence >= 0.7 ? "detected" : "suggested";
+      }
+    });
+    
+    setWatchData(newWatchData);
+    setFieldStatus(newFieldStatus);
+    setShowCamera(false);
+    
+    const detectedCount = detectedFields.filter(f => f.confidence >= 0.5).length;
+    if (detectedCount > 0) {
+      toast.success(`Detected ${detectedCount} watch attributes. Please confirm each field.`);
+    } else {
+      toast.warning("Could not detect watch details. Please enter manually.");
+    }
+  }, [watchData, fieldStatus]);
+
+  // Calculate valuation
+  const calculateValuation = async () => {
+    if (!watchData.brand || !watchData.model_family) {
+      toast.error("Please select at least brand and model");
+      return;
+    }
+    
+    setIsLoading(true);
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      const response = await axios.post(`${API}/valuation`, {
+        watch: watchData,
+        calibration_mode: calibrationMode,
+        confirmed_fields: confirmedFields
+      });
+      setValuation(response.data);
+    } catch (error) {
+      console.error("Valuation error:", error);
+      toast.error("Failed to calculate valuation");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  // Reset form
+  const resetForm = () => {
+    setWatchData({
+      brand: "",
+      model_family: "",
+      dial_color: "",
+      bezel_type: "",
+      bracelet_type: "",
+      reference_number: "",
+      condition: "Very Good",
+      box_papers: false
+    });
+    setFieldStatus({
+      brand: "manual",
+      model_family: "manual",
+      dial_color: "manual",
+      bezel_type: "manual",
+      bracelet_type: "manual"
+    });
+    setConfirmedFields([]);
+    setValuation(null);
+  };
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" data-testid="home-page">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-serif font-light text-amber-100 mb-4" data-testid="main-title">
+            Watch Market Intelligence
+          </h1>
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            Conservative, liquidity-first valuations anchored from trade-level pricing.
+            <span className="text-amber-500/80 block mt-1">Not an appraisal service.</span>
+          </p>
+        </div>
+
+        {/* Camera Scanner Modal */}
+        {showCamera && (
+          <CameraScanner
+            onClose={() => setShowCamera(false)}
+            onScanComplete={handleScanComplete}
+            apiEndpoint={`${API}/analyze-image-base64`}
+          />
+        )}
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column - Input Form */}
+          <div className="space-y-6">
+            {/* Scan Button */}
+            <button
+              onClick={() => setShowCamera(true)}
+              className="w-full py-4 px-6 bg-gradient-to-r from-amber-600/20 to-amber-500/20 border border-amber-500/30 rounded-xl text-amber-100 font-medium hover:from-amber-600/30 hover:to-amber-500/30 transition-all duration-300 flex items-center justify-center gap-3 group"
+              data-testid="open-camera-btn"
+            >
+              <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Scan Watch with Camera</span>
+              <span className="text-xs text-amber-500/60 ml-2">Auto-detect details</span>
+            </button>
+
+            {/* Watch Form */}
+            <WatchForm
+              watchData={watchData}
+              fieldStatus={fieldStatus}
+              confirmedFields={confirmedFields}
+              referenceData={referenceData}
+              onFieldChange={handleFieldChange}
+              onConfirmField={handleConfirmField}
+              onRejectField={handleRejectField}
+            />
+
+            {/* Calibration Mode */}
+            <CalibrationSelector
+              selectedMode={calibrationMode}
+              onModeChange={setCalibrationMode}
+            />
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <button
+                onClick={calculateValuation}
+                disabled={isLoading || !watchData.brand || !watchData.model_family}
+                className="flex-1 py-4 px-6 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-semibold rounded-xl hover:from-amber-500 hover:to-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-amber-500/20"
+                data-testid="calculate-valuation-btn"
+              >
+                {isLoading ? "Calculating..." : "Get Valuation"}
+              </button>
+              <button
+                onClick={resetForm}
+                className="px-6 py-4 border border-slate-700 text-slate-400 rounded-xl hover:bg-slate-800/50 hover:text-slate-300 transition-all duration-300"
+                data-testid="reset-form-btn"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column - Valuation Display */}
+          <div>
+            <ValuationDisplay 
+              valuation={valuation}
+              confirmedFields={confirmedFields}
+              totalFields={5}
+            />
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-12 text-center text-sm text-slate-600 max-w-3xl mx-auto">
+          <p className="border-t border-slate-800 pt-6">
+            <strong className="text-slate-500">Disclaimer:</strong> Crowntime AI provides market intelligence estimates only. 
+            These are not appraisals and should not be used as such. Values are based on recent trade-level data 
+            and may not reflect your specific watch's condition, provenance, or current market dynamics.
+          </p>
+        </div>
+      </main>
+      
+      <Toaster position="top-right" theme="dark" />
     </div>
   );
 };
@@ -42,9 +310,7 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route path="/" element={<HomePage />} />
         </Routes>
       </BrowserRouter>
     </div>
