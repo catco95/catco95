@@ -372,11 +372,19 @@ const HomePage = () => {
           </div>
 
           {/* Right Column - Valuation Display */}
-          <div>
+          <div className="space-y-6">
             <ValuationDisplay 
               valuation={valuation}
               confirmedFields={confirmedFields}
               totalFields={5}
+            />
+            
+            {/* Scan History */}
+            <ScanHistory
+              history={scanHistory}
+              onSelectScan={loadScanFromHistory}
+              onDeleteScan={deleteScan}
+              onClearHistory={clearHistory}
             />
           </div>
         </div>
