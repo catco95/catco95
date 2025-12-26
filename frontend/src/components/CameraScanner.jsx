@@ -1,0 +1,272 @@
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { toast } from 'sonner';
+
+const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+  const [stream, setStream] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [analysisProgress, setAnalysisProgress] = useState('');
+
+  // Initialize camera
+  useEffect(() => {
+    const initCamera = async () => {
+      try {
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment', // Prefer back camera on mobile
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        });
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          setStream(mediaStream);
+        }
+      } catch (err) {
+        console.error('Camera error:', err);
+        setCameraError(
+          err.name === 'NotAllowedError' 
+            ? 'Camera access denied. Please allow camera access to scan your watch.'
+            : 'Could not access camera. Please try again or enter details manually.'
+        );
+      }
+    };
+
+    initCamera();
+
+    // Cleanup
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  // Stop camera on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
+
+  // Capture image
+  const captureImage = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size to video dimensions
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0);
+
+    // Get base64 image
+    const imageData = canvas.toDataURL('image/jpeg', 0.85);
+    setCapturedImage(imageData);
+
+    // Stop camera stream
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+  }, [stream]);
+
+  // Analyze captured image
+  const analyzeImage = async () => {
+    if (!capturedImage) return;
+
+    setIsLoading(true);
+    setAnalysisProgress('Sending image to AI...');
+
+    try {
+      setAnalysisProgress('Analyzing watch details...');
+      
+      const response = await axios.post(apiEndpoint, {
+        image: capturedImage
+      });
+
+      if (response.data.success) {
+        setAnalysisProgress('Detection complete!');
+        onScanComplete(response.data.detected_fields);
+      } else {
+        toast.error(response.data.error || 'Failed to analyze image');
+        retakePhoto();
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast.error('Failed to analyze image. Please try again.');
+      retakePhoto();
+    } finally {
+      setIsLoading(false);
+      setAnalysisProgress('');
+    }
+  };
+
+  // Retake photo
+  const retakePhoto = async () => {
+    setCapturedImage(null);
+    
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        setStream(mediaStream);
+      }
+    } catch (err) {
+      setCameraError('Could not restart camera.');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950" data-testid="camera-scanner">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-slate-950 to-transparent">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-amber-100 font-serif text-lg">Scan Your Watch</h2>
+            <p className="text-slate-400 text-sm">Position the watch face in the frame</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition-colors"
+            data-testid="close-camera-btn"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Camera View / Captured Image */}
+      <div className="relative h-full flex items-center justify-center">
+        {cameraError ? (
+          <div className="text-center p-8">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+              <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p className="text-red-400 mb-4">{cameraError}</p>
+            <button
+              onClick={onClose}
+              className="px-6 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700"
+            >
+              Enter Details Manually
+            </button>
+          </div>
+        ) : capturedImage ? (
+          <img
+            src={capturedImage}
+            alt="Captured watch"
+            className="max-h-full max-w-full object-contain"
+            data-testid="captured-image"
+          />
+        ) : (
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="max-h-full max-w-full object-contain"
+              data-testid="camera-video"
+            />
+            
+            {/* Viewfinder overlay */}
+            <div className="absolute inset-0 pointer-events-none camera-overlay">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 md:w-96 md:h-96">
+                {/* Viewfinder corners */}
+                <div className="viewfinder-corner top-left"></div>
+                <div className="viewfinder-corner top-right"></div>
+                <div className="viewfinder-corner bottom-left"></div>
+                <div className="viewfinder-corner bottom-right"></div>
+                
+                {/* Scan line */}
+                <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent scan-line"></div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Hidden canvas for capture */}
+        <canvas ref={canvasRef} className="hidden" />
+      </div>
+
+      {/* Footer Controls */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-6 bg-gradient-to-t from-slate-950 to-transparent">
+        {isLoading ? (
+          <div className="text-center">
+            <div className="inline-flex items-center gap-3 px-6 py-4 bg-slate-800/80 rounded-2xl">
+              <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-amber-100">{analysisProgress}</span>
+            </div>
+          </div>
+        ) : capturedImage ? (
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={retakePhoto}
+              className="px-8 py-4 bg-slate-800/80 border border-slate-700 text-slate-300 rounded-2xl hover:bg-slate-700 transition-colors flex items-center gap-2"
+              data-testid="retake-btn"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Retake
+            </button>
+            <button
+              onClick={analyzeImage}
+              className="px-8 py-4 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-semibold rounded-2xl hover:from-amber-500 hover:to-amber-400 transition-colors flex items-center gap-2 shadow-lg shadow-amber-500/20"
+              data-testid="analyze-btn"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Analyze Watch
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-4">
+            <button
+              onClick={captureImage}
+              className="w-20 h-20 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 border-4 border-amber-400/50 flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-amber-500/30"
+              data-testid="capture-btn"
+            >
+              <div className="w-14 h-14 rounded-full border-2 border-slate-950/30"></div>
+            </button>
+            <p className="text-slate-400 text-sm">Tap to capture</p>
+          </div>
+        )}
+
+        {/* Detection info */}
+        <div className="mt-6 text-center">
+          <p className="text-slate-500 text-xs">
+            Detects: Brand, Model, Dial Color, Bezel, Bracelet
+          </p>
+          <p className="text-amber-500/60 text-xs mt-1">
+            ⚠️ Does not verify authenticity or determine year
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CameraScanner;
