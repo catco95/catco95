@@ -11,6 +11,7 @@ import WatchForm from "@/components/WatchForm";
 import ValuationDisplay from "@/components/ValuationDisplay";
 import CameraScanner from "@/components/CameraScanner";
 import CalibrationSelector from "@/components/CalibrationSelector";
+import ScanHistory from "@/components/ScanHistory";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -41,6 +42,7 @@ const HomePage = () => {
   const [calibrationMode, setCalibrationMode] = useState("market_neutral");
   const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [scanHistory, setScanHistory] = useState([]);
   const [referenceData, setReferenceData] = useState({
     brands: [],
     models: [],
@@ -48,13 +50,14 @@ const HomePage = () => {
     conditions: []
   });
 
-  // Fetch reference data
+  // Fetch reference data and scan history
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
-        const [brandsRes, conditionsRes] = await Promise.all([
+        const [brandsRes, conditionsRes, historyRes] = await Promise.all([
           axios.get(`${API}/watch-data/brands`),
-          axios.get(`${API}/watch-data/conditions`)
+          axios.get(`${API}/watch-data/conditions`),
+          axios.get(`${API}/scan-history?limit=10`)
         ]);
         setReferenceData(prev => ({
           ...prev,
