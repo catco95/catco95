@@ -367,8 +367,12 @@ Respond in this exact JSON format:
     "notes": "Any relevant observations about image quality or visibility"
 }"""
 
-        response = openai_client.chat.completions.create(
-            model="gpt-4o",
+        # Use emergent integrations for vision
+        image_url = f"data:image/jpeg;base64,{image_base64}"
+        
+        response = await chat(
+            api_key=EMERGENT_KEY,
+            model=Models.GPT_4O,
             messages=[
                 {
                     "role": "user",
@@ -376,18 +380,14 @@ Respond in this exact JSON format:
                         {"type": "text", "text": prompt},
                         {
                             "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_base64}",
-                                "detail": "high"
-                            }
+                            "image_url": {"url": image_url}
                         }
                     ]
                 }
-            ],
-            max_tokens=1000
+            ]
         )
         
-        # Parse the response
+        # Extract response text
         response_text = response.choices[0].message.content
         
         # Extract JSON from response
