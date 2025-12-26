@@ -226,9 +226,23 @@ const ValuationTool = () => {
                 {/* Image Upload */}
                 <div className="mb-12">
                   <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-4">
-                    Watch Image {imagePreview ? "(Required for image-only mode)" : "(Optional - or use image-only mode)"}
+                    Watch Image (Optional - or use camera)
                   </label>
-                  <div className="relative">
+                  
+                  <div className="flex gap-4 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowCamera(true)}
+                      className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-white/20 rounded-sm py-4 hover:border-primary/50 transition-all"
+                    >
+                      <Camera className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Use Camera</span>
+                    </button>
+                    
+                    <label htmlFor="image-upload" className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-white/20 rounded-sm py-4 cursor-pointer hover:border-primary/50 transition-all">
+                      <Upload className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Upload File</span>
+                    </label>
                     <input
                       type="file"
                       accept="image/*"
@@ -237,26 +251,21 @@ const ValuationTool = () => {
                       className="hidden"
                       id="image-upload"
                     />
-                    <label
-                      htmlFor="image-upload"
-                      className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/20 rounded-sm cursor-pointer hover:border-primary/50 transition-all"
-                    >
-                      {imagePreview ? (
-                        <div className="relative w-full h-full">
-                          <img src={imagePreview} alt="Preview" className="h-full w-full object-contain p-4" />
-                          <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-sm">
-                            Image uploaded ✓
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <Upload className="w-12 h-12 text-muted-foreground mb-4" />
-                          <span className="text-sm text-muted-foreground mb-2">Click to upload watch image</span>
-                          <span className="text-xs text-muted-foreground/60">Upload just a photo to skip the form below</span>
-                        </>
-                      )}
-                    </label>
                   </div>
+                  
+                  {imagePreview && (
+                    <div className="relative w-full h-48 border border-white/20 rounded-sm overflow-hidden">
+                      <img src={imagePreview} alt="Preview" className="h-full w-full object-contain" />
+                    </div>
+                  )}
+                  
+                  {autoFilledFields.length > 0 && (
+                    <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-sm p-3">
+                      <p className="text-xs text-yellow-400">
+                        <span className="font-semibold">{autoFilledFields.length} fields auto-filled from camera.</span> Please verify before submission.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Currency Selection */}
