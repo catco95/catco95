@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 import base64
 import json
-from openai import OpenAI
+from emergentintegrations.llm.openai import chat, Models
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -21,11 +21,8 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# OpenAI client for vision
-openai_client = OpenAI(
-    api_key=os.environ.get('EMERGENT_LLM_KEY'),
-    base_url="https://emergentintegrations.ai/api/v1"
-)
+# Emergent LLM Key
+EMERGENT_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
 # Create the main app
 app = FastAPI(title="Crowntime AI - Watch Market Intelligence")
