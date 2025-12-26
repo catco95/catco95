@@ -24,7 +24,7 @@ db = client[os.environ['DB_NAME']]
 # OpenAI client for vision
 openai_client = OpenAI(
     api_key=os.environ.get('EMERGENT_LLM_KEY'),
-    base_url="https://emergentintegrations.ai/api/v1/chat"
+    base_url="https://emergentintegrations.ai/api/v1"
 )
 
 # Create the main app
