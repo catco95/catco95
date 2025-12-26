@@ -339,13 +339,7 @@ async def analyze_watch_image(image_base64: str) -> ImageAnalysisResult:
     
     try:
         # Build the vision prompt - explicitly avoid authenticity/year
-        prompt = """You are a watch identification assistant. Analyze this watch image and identify ONLY the following visible attributes:
-
-1. **Brand** - Look for logo, crown, text on dial (e.g., Rolex, Omega, Patek Philippe, Audemars Piguet)
-2. **Model Family** - Based on case shape, design elements (e.g., Submariner, Daytona, Nautilus, Royal Oak)
-3. **Dial Color** - The actual color of the dial (e.g., Black, Blue, White, Green, Silver)
-4. **Bezel Type** - What's on the bezel (e.g., Ceramic, Tachymeter, Fluted, Smooth, Pepsi, Batman)
-5. **Bracelet Type** - The band style (e.g., Oyster, Jubilee, Rubber, Leather, Steel, NATO)
+        system_prompt = """You are a watch identification assistant. When shown a watch image, identify ONLY visible attributes.
 
 IMPORTANT RULES:
 - NEVER attempt to determine authenticity - this is not an authentication tool
@@ -355,7 +349,7 @@ IMPORTANT RULES:
 - Provide confidence score (0.0-1.0) for each detected attribute
 - If unsure, set confidence below 0.5
 
-Respond in this exact JSON format:
+Always respond in this exact JSON format:
 {
     "detected": [
         {"field": "brand", "value": "detected value or null", "confidence": 0.0-1.0},
@@ -367,32 +361,31 @@ Respond in this exact JSON format:
     "notes": "Any relevant observations about image quality or visibility"
 }"""
 
-        # Use emergent integrations for vision
-        image_url = f"data:image/jpeg;base64,{image_base64}"
-        
-        response = await chat(
+        user_prompt = """Analyze this watch image and identify:
+1. Brand - Look for logo, crown, text on dial (e.g., Rolex, Omega, Patek Philippe, Audemars Piguet)
+2. Model Family - Based on case shape, design elements (e.g., Submariner, Daytona, Nautilus, Royal Oak)
+3. Dial Color - The actual color of the dial (e.g., Black, Blue, White, Green, Silver)
+4. Bezel Type - What's on the bezel (e.g., Ceramic, Tachymeter, Fluted, Smooth, Pepsi, Batman)
+5. Bracelet Type - The band style (e.g., Oyster, Jubilee, Rubber, Leather, Steel, NATO)
+
+Respond with JSON only."""
+
+        # Create LlmChat instance with vision model
+        llm = LlmChat(
             api_key=EMERGENT_KEY,
-            model=Models.GPT_4O,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": image_url}
-                        }
-                    ]
-                }
-            ]
-        )
+            session_id=str(uuid.uuid4()),
+            system_message=system_prompt
+        ).with_model("gpt-4o")
         
-        # Extract response text
-        response_text = response.choices[0].message.content
+        # Create user message with image
+        image_content = ImageContent(image_base64=image_base64)
+        user_message = UserMessage(text=user_prompt, file_contents=[image_content])
+        
+        # Send message and get response
+        response_text = await llm.send_message(user_message)
         
         # Extract JSON from response
         try:
-            # Try to find JSON in the response
             import re
             json_match = re.search(r'\{[\s\S]*\}', response_text)
             if json_match:
@@ -400,7 +393,6 @@ Respond in this exact JSON format:
             else:
                 raise ValueError("No JSON found in response")
         except json.JSONDecodeError:
-            # If JSON parsing fails, create a basic response
             return ImageAnalysisResult(
                 success=False,
                 detected_fields=[],
@@ -410,7 +402,7 @@ Respond in this exact JSON format:
         # Convert to our format
         detected_fields = []
         for item in result_json.get("detected", []):
-            if item.get("value") and item["value"] != "null":
+            if item.get("value") and item["value"] != "null" and item["value"] is not None:
                 detected_fields.append(DetectedField(
                     field_name=item["field"],
                     detected_value=item["value"],
