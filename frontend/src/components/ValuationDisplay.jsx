@@ -38,7 +38,7 @@ const ValuationDisplay = ({ valuation, confirmedFields, totalFields }) => {
         </div>
         <h3 className="text-xl font-serif text-amber-100/60 mb-2">Valuation Results</h3>
         <p className="text-slate-500 text-sm max-w-xs">
-          Enter watch details or scan with camera, then click "Get Valuation" to see market estimates.
+          Enter watch details or scan with camera, then click &quot;Get Valuation&quot; to see market estimates.
         </p>
         
         {/* Confirmation status */}
