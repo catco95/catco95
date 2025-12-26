@@ -449,9 +449,12 @@ async def valuate_watch(
     modifications: str = Form(""),
     location: str = Form(""),
     currency: str = Form("USD"),
+    auto_filled_fields: str = Form(""),  # JSON string of which fields were auto-filled
     image: Optional[UploadFile] = File(None)
 ):
     try:
+        # Check valuation limit
+        # ... existing limit check code ...
         # Check if we have either text data or image
         has_text_data = any([brand, model, reference, year, case_size, case_material, 
                             bezel_type, dial_description, bracelet_strap, condition, 
@@ -476,6 +479,19 @@ async def valuate_watch(
             "location": location
         }
         
+        # Parse auto-filled fields
+        auto_filled = []
+        if auto_filled_fields:
+            try:
+                auto_filled = json.loads(auto_filled_fields)
+            except:
+                pass
+        
+        # Build auto-fill context for AI
+        auto_fill_context = ""
+        if auto_filled:
+            auto_fill_context = f"\n\nAUTO-FILLED FIELDS (UNCONFIRMED): {', '.join(auto_filled)}\nThese fields were auto-detected from image and NOT user-verified. Apply AUTO-FILL CONFIDENCE PENALTY: Reduce overall confidence by 0.10-0.15. Flag as verification-required in risks."
+        
         currency_symbol = get_currency_symbol(currency)
         
         # Search for market data
@@ -484,6 +500,10 @@ async def valuate_watch(
             logging.info(f"Searching market data for {brand} {model} {reference}")
             market_data = await search_market_data(brand, model, reference)
             logging.info(f"Market data retrieved: {len(market_data)} chars")
+        
+        # Add auto-fill context to market data
+        if auto_fill_context:
+            market_data += auto_fill_context
         
         api_key = os.environ.get('EMERGENT_LLM_KEY', '')
         if not api_key:
