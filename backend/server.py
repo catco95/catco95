@@ -555,6 +555,61 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     return status_checks
 
+# Scan history endpoints
+@api_router.post("/scan-history", response_model=ScanHistoryItem)
+async def save_scan(request: SaveScanRequest):
+    """Save a watch scan to history"""
+    
+    scan_item = ScanHistoryItem(
+        brand=request.watch.brand,
+        model_family=request.watch.model_family,
+        dial_color=request.watch.dial_color,
+        bezel_type=request.watch.bezel_type,
+        bracelet_type=request.watch.bracelet_type,
+        valuation_low=request.valuation.low_estimate if request.valuation else None,
+        valuation_fair=request.valuation.fair_estimate if request.valuation else None,
+        valuation_high=request.valuation.high_estimate if request.valuation else None,
+        confidence_level=request.valuation.confidence_level if request.valuation else None,
+        image_thumbnail=request.image_thumbnail
+    )
+    
+    doc = scan_item.model_dump()
+    doc['timestamp'] = doc['timestamp'].isoformat()
+    
+    await db.scan_history.insert_one(doc)
+    return scan_item
+
+@api_router.get("/scan-history", response_model=List[ScanHistoryItem])
+async def get_scan_history(limit: int = 10):
+    """Get recent scan history"""
+    
+    scans = await db.scan_history.find(
+        {}, 
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    for scan in scans:
+        if isinstance(scan.get('timestamp'), str):
+            scan['timestamp'] = datetime.fromisoformat(scan['timestamp'])
+    
+    return scans
+
+@api_router.delete("/scan-history/{scan_id}")
+async def delete_scan(scan_id: str):
+    """Delete a scan from history"""
+    
+    result = await db.scan_history.delete_one({"id": scan_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    return {"message": "Scan deleted"}
+
+@api_router.delete("/scan-history")
+async def clear_scan_history():
+    """Clear all scan history"""
+    
+    await db.scan_history.delete_many({})
+    return {"message": "History cleared"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
