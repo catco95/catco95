@@ -228,6 +228,13 @@ async def valuate_watch(
         
         currency_symbol = get_currency_symbol(currency)
         
+        # Search for market data
+        market_data = ""
+        if brand and model:
+            logging.info(f"Searching market data for {brand} {model} {reference}")
+            market_data = await search_market_data(brand, model, reference)
+            logging.info(f"Market data retrieved: {len(market_data)} chars")
+        
         api_key = os.environ.get('EMERGENT_LLM_KEY', '')
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
@@ -294,7 +301,7 @@ JSON:
             )
         else:
             # Text mode (with or without image)
-            system_context, watch_prompt = create_valuation_prompt(watch_data, currency)
+            system_context, watch_prompt = create_valuation_prompt(watch_data, currency, market_data)
             
             chat = LlmChat(
                 api_key=api_key,
