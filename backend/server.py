@@ -229,6 +229,27 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
+# Scan history model
+class ScanHistoryItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    brand: Optional[str] = None
+    model_family: Optional[str] = None
+    dial_color: Optional[str] = None
+    bezel_type: Optional[str] = None
+    bracelet_type: Optional[str] = None
+    valuation_low: Optional[int] = None
+    valuation_fair: Optional[int] = None
+    valuation_high: Optional[int] = None
+    confidence_level: Optional[str] = None
+    image_thumbnail: Optional[str] = None  # Small base64 thumbnail
+
+class SaveScanRequest(BaseModel):
+    watch: WatchDetails
+    valuation: Optional[ValuationResult] = None
+    image_thumbnail: Optional[str] = None
+
 # ============== UTILITY FUNCTIONS ==============
 def calculate_valuation(watch: WatchDetails, calibration_mode: str, confirmed_fields: List[str]) -> ValuationResult:
     """Calculate conservative watch valuation with dealer-survivable pricing"""
