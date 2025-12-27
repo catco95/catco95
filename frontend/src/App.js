@@ -298,19 +298,28 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" data-testid="home-page">
+    <div className="min-h-screen racing-green-gradient" data-testid="home-page">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-light text-amber-100 mb-4" data-testid="main-title">
-            Watch Market Intelligence
+          <h1 className="text-4xl md:text-5xl font-serif font-light mb-4" data-testid="main-title">
+            <span className="gold-gradient">Watch Market Intelligence</span>
           </h1>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+          <p className="text-emerald-100/70 text-lg max-w-2xl mx-auto">
             Conservative, liquidity-first valuations anchored from trade-level pricing.
-            <span className="text-amber-500/80 block mt-1">Not an appraisal service.</span>
+            <span className="text-gold block mt-1">Not an appraisal service.</span>
           </p>
+        </div>
+
+        {/* Currency Selector - Top Right */}
+        <div className="flex justify-end mb-6">
+          <CurrencySelector
+            currencies={currencies}
+            selectedCurrency={selectedCurrency}
+            onCurrencyChange={setSelectedCurrency}
+          />
         </div>
 
         {/* Camera Scanner Modal */}
@@ -328,7 +337,7 @@ const HomePage = () => {
             {/* Scan Button */}
             <button
               onClick={() => setShowCamera(true)}
-              className="w-full py-4 px-6 bg-gradient-to-r from-amber-600/20 to-amber-500/20 border border-amber-500/30 rounded-xl text-amber-100 font-medium hover:from-amber-600/30 hover:to-amber-500/30 transition-all duration-300 flex items-center justify-center gap-3 group"
+              className="w-full py-4 px-6 bg-gradient-to-r from-emerald-800/30 to-emerald-700/30 border border-gold/30 rounded-xl text-gold-light font-medium hover:from-emerald-800/50 hover:to-emerald-700/50 hover:border-gold/50 transition-all duration-300 flex items-center justify-center gap-3 group"
               data-testid="open-camera-btn"
             >
               <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -336,7 +345,7 @@ const HomePage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span>Scan Watch with Camera</span>
-              <span className="text-xs text-amber-500/60 ml-2">Auto-detect details</span>
+              <span className="text-xs text-gold/60 ml-2">Auto-detect details</span>
             </button>
 
             {/* Watch Form */}
