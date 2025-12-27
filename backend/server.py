@@ -267,12 +267,18 @@ async def valuate_watch(request: WatchValuationRequest):
         
         # Calculate confidence score based on provided fields
         confidence = 0
-        if request.brand: confidence += 20
-        if request.model: confidence += 20
-        if request.dial_color: confidence += 15
-        if request.bezel_type: confidence += 15
-        if request.bracelet_type: confidence += 15
-        if request.reference_number: confidence += 15
+        if request.brand:
+            confidence += 20
+        if request.model:
+            confidence += 20
+        if request.dial_color:
+            confidence += 15
+        if request.bezel_type:
+            confidence += 15
+        if request.bracelet_type:
+            confidence += 15
+        if request.reference_number:
+            confidence += 15
         
         valuation = WatchValuation(
             brand=request.brand,
