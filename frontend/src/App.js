@@ -292,7 +292,7 @@ const ValuationResults = ({ valuation, loading, fieldsConfirmed }) => {
           </div>
           <h3 className="text-amber-400 font-semibold text-lg mb-2">Valuation Results</h3>
           <p className="text-gray-400 text-sm max-w-xs">
-            Enter watch details or scan with camera, then click "Get Valuation" to see market estimates.
+            Enter watch details or scan with camera, then click &quot;Get Valuation&quot; to see market estimates.
           </p>
           
           <div className="mt-6 w-full max-w-xs">
