@@ -617,6 +617,45 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
+# Portfolio models
+class PortfolioWatch(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    brand: str
+    model_family: str
+    dial_color: Optional[str] = None
+    bezel_type: Optional[str] = None
+    bracelet_type: Optional[str] = None
+    reference_number: Optional[str] = None
+    condition: str = "Very Good"
+    box_papers: bool = False
+    purchase_price: Optional[int] = None
+    purchase_date: Optional[str] = None
+    purchase_currency: str = "USD"
+    notes: Optional[str] = None
+    added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PortfolioWatchCreate(BaseModel):
+    brand: str
+    model_family: str
+    dial_color: Optional[str] = None
+    bezel_type: Optional[str] = None
+    bracelet_type: Optional[str] = None
+    reference_number: Optional[str] = None
+    condition: str = "Very Good"
+    box_papers: bool = False
+    purchase_price: Optional[int] = None
+    purchase_date: Optional[str] = None
+    purchase_currency: str = "USD"
+    notes: Optional[str] = None
+
+# Price history model
+class PriceHistoryPoint(BaseModel):
+    date: str
+    low: int
+    fair: int
+    high: int
+
 # Scan history model
 class ScanHistoryItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
