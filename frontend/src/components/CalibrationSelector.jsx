@@ -8,14 +8,14 @@ const CALIBRATION_MODES = [
     name: 'Ultra-Conservative',
     description: 'Maximum safety margin for quick liquidity',
     icon: '🛡️',
-    color: 'text-blue-400'
+    color: 'text-teal-400'
   },
   {
     id: 'market_neutral',
     name: 'Market-Neutral',
     description: 'Balanced approach reflecting current market',
     icon: '⚖️',
-    color: 'text-amber-400'
+    color: 'text-gold'
   },
   {
     id: 'patient_retail',
@@ -29,7 +29,7 @@ const CALIBRATION_MODES = [
 const CalibrationSelector = ({ selectedMode, onModeChange }) => {
   return (
     <div className="glass-card rounded-2xl p-6" data-testid="calibration-selector">
-      <h2 className="text-lg font-serif text-amber-100 border-b border-slate-800 pb-3 mb-4">
+      <h2 className="text-lg font-serif text-gold border-b border-emerald-800/50 pb-3 mb-4">
         Dealer Calibration Mode
       </h2>
       
@@ -39,8 +39,8 @@ const CalibrationSelector = ({ selectedMode, onModeChange }) => {
             key={mode.id}
             className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
               selectedMode === mode.id
-                ? 'bg-slate-800/50 border-amber-500/40'
-                : 'bg-slate-900/30 border-slate-800 hover:border-slate-700'
+                ? 'bg-emerald-800/30 border-gold/40'
+                : 'bg-emerald-900/20 border-emerald-800/30 hover:border-emerald-700/50'
             }`}
             onClick={() => onModeChange(mode.id)}
             data-testid={`calibration-${mode.id}`}
@@ -48,7 +48,7 @@ const CalibrationSelector = ({ selectedMode, onModeChange }) => {
             <RadioGroupItem
               value={mode.id}
               id={mode.id}
-              className="mt-1 border-slate-600 data-[state=checked]:border-amber-500 data-[state=checked]:bg-amber-500"
+              className="mt-1 border-emerald-700 data-[state=checked]:border-gold data-[state=checked]:bg-gold"
             />
             <div className="flex-1">
               <Label 
@@ -58,7 +58,7 @@ const CalibrationSelector = ({ selectedMode, onModeChange }) => {
                 <span className="mr-2">{mode.icon}</span>
                 {mode.name}
               </Label>
-              <p className="text-xs text-slate-500 mt-1">{mode.description}</p>
+              <p className="text-xs text-emerald-100/40 mt-1">{mode.description}</p>
             </div>
           </div>
         ))}
