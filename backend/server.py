@@ -18,7 +18,7 @@ import json
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 import httpx
-from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContent
+from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 
 
 ROOT_DIR = Path(__file__).parent
