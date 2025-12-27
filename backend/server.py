@@ -1501,7 +1501,6 @@ async def analyze_watch_image(file: UploadFile = File(...)):
     try:
         contents = await file.read()
         base64_image = base64.b64encode(contents).decode('utf-8')
-        media_type = file.content_type or "image/jpeg"
         
         brands_list = ", ".join(WATCH_DATA.keys())
         
@@ -1520,14 +1519,14 @@ async def analyze_watch_image(file: UploadFile = File(...)):
 Always respond in valid JSON format: {{"brand": "", "model": "", "dial_color": "", "bezel_type": "", "bracelet_type": "", "reference_number": "", "condition": "", "confidence": 0.0, "description": ""}}"""
         )
         
-        # Create file content for image
-        file_content = FileContent(content_type=media_type, file_content_base64=base64_image)
+        # Create ImageContent for the watch image
+        image_content = ImageContent(image_base64=base64_image)
         
         # Send message with image
         response_text = await chat.send_message(
             UserMessage(
                 text="Analyze this watch image and identify all details. Return only valid JSON.",
-                file_contents=[file_content]
+                file_contents=[image_content]
             )
         )
         
