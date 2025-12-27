@@ -1042,7 +1042,7 @@ function App() {
           <p className="text-xs text-gray-500 max-w-3xl mx-auto">
             <span className="font-semibold">Disclaimer:</span> Crowntime AI provides market intelligence estimates only. 
             These are not appraisals and should not be used as such. Values are based on recent trade-level data 
-            and may not reflect your specific watch's condition, provenance, or current market dynamics.
+            and may not reflect your specific watch&apos;s condition, provenance, or current market dynamics.
           </p>
         </div>
       </main>
