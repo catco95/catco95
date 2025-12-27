@@ -874,7 +874,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetchRecentScans();
+    // Using setTimeout to avoid synchronous setState warning
+    const timeoutId = setTimeout(() => {
+      fetchRecentScans();
+    }, 0);
+    return () => clearTimeout(timeoutId);
   }, [fetchRecentScans]);
 
   const handleValuate = async () => {
