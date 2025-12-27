@@ -187,21 +187,21 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950" data-testid="camera-scanner">
+    <div className="fixed inset-0 z-50 bg-emerald-950" data-testid="camera-scanner">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-slate-950 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-emerald-950 to-transparent">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-amber-100 font-serif text-lg">
+            <h2 className="text-gold font-serif text-lg">
               {mode === 'camera' ? 'Scan Your Watch' : 'Upload Watch Photo'}
             </h2>
-            <p className="text-slate-400 text-sm">
+            <p className="text-emerald-100/60 text-sm">
               {mode === 'camera' ? 'Position the watch face in the frame' : 'Select a clear photo of your watch'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-slate-800/80 text-slate-300 hover:bg-slate-700 transition-colors"
+            className="p-2 rounded-full bg-emerald-900/80 text-emerald-100/70 hover:bg-emerald-800 transition-colors"
             data-testid="close-camera-btn"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -216,8 +216,8 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
             onClick={switchToCamera}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
               mode === 'camera' 
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' 
-                : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:bg-slate-800'
+                ? 'bg-gold/20 text-gold border border-gold/40' 
+                : 'bg-emerald-900/50 text-emerald-100/60 border border-emerald-800 hover:bg-emerald-900'
             }`}
             data-testid="mode-camera-btn"
           >
@@ -230,8 +230,8 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
             onClick={switchToUpload}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
               mode === 'upload' 
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' 
-                : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:bg-slate-800'
+                ? 'bg-gold/20 text-gold border border-gold/40' 
+                : 'bg-emerald-900/50 text-emerald-100/60 border border-emerald-800 hover:bg-emerald-900'
             }`}
             data-testid="mode-upload-btn"
           >
@@ -247,15 +247,15 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
       <div className="relative h-full flex items-center justify-center pt-32 pb-48">
         {mode === 'camera' && cameraError && !capturedImage ? (
           <div className="text-center p-8">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-              <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-orange-500/20 flex items-center justify-center">
+              <svg className="w-10 h-10 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <p className="text-red-400 mb-4">{cameraError}</p>
+            <p className="text-orange-400 mb-4">{cameraError}</p>
             <button
               onClick={switchToUpload}
-              className="px-6 py-3 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 border border-amber-500/40 transition-colors"
+              className="px-6 py-3 bg-gold/20 text-gold rounded-lg hover:bg-gold/30 border border-gold/40 transition-colors"
             >
               Upload Image Instead
             </button>
@@ -270,7 +270,7 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
         ) : mode === 'upload' ? (
           <div className="text-center p-8 w-full max-w-md">
             <label 
-              className="block w-full p-12 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-amber-500/50 transition-colors group"
+              className="block w-full p-12 border-2 border-dashed border-emerald-700 rounded-2xl cursor-pointer hover:border-gold/50 transition-colors group"
               data-testid="upload-area"
             >
               <input
@@ -281,14 +281,14 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
                 className="hidden"
                 data-testid="file-input"
               />
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
-                <svg className="w-8 h-8 text-slate-500 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-900 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                <svg className="w-8 h-8 text-emerald-700 group-hover:text-gold transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <p className="text-slate-400 mb-2">Drop your watch photo here</p>
-              <p className="text-slate-600 text-sm">or click to browse</p>
-              <p className="text-slate-700 text-xs mt-4">Supports: JPG, PNG, HEIC • Max 10MB</p>
+              <p className="text-emerald-100/60 mb-2">Drop your watch photo here</p>
+              <p className="text-emerald-100/40 text-sm">or click to browse</p>
+              <p className="text-emerald-100/30 text-xs mt-4">Supports: JPG, PNG, HEIC • Max 10MB</p>
             </label>
           </div>
         ) : (
@@ -312,7 +312,7 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
                 <div className="viewfinder-corner bottom-right"></div>
                 
                 {/* Scan line */}
-                <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent scan-line"></div>
+                <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent scan-line"></div>
               </div>
             </div>
           </>
@@ -323,19 +323,19 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
       </div>
 
       {/* Footer Controls */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 p-6 bg-gradient-to-t from-slate-950 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-6 bg-gradient-to-t from-emerald-950 to-transparent">
         {isLoading ? (
           <div className="text-center">
-            <div className="inline-flex items-center gap-3 px-6 py-4 bg-slate-800/80 rounded-2xl">
-              <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-amber-100">{analysisProgress}</span>
+            <div className="inline-flex items-center gap-3 px-6 py-4 bg-emerald-900/80 rounded-2xl">
+              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gold">{analysisProgress}</span>
             </div>
           </div>
         ) : capturedImage ? (
           <div className="flex justify-center gap-4">
             <button
               onClick={retakePhoto}
-              className="px-8 py-4 bg-slate-800/80 border border-slate-700 text-slate-300 rounded-2xl hover:bg-slate-700 transition-colors flex items-center gap-2"
+              className="px-8 py-4 bg-emerald-900/80 border border-emerald-700 text-emerald-100/70 rounded-2xl hover:bg-emerald-800 transition-colors flex items-center gap-2"
               data-testid="retake-btn"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -345,7 +345,7 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
             </button>
             <button
               onClick={analyzeImage}
-              className="px-8 py-4 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-semibold rounded-2xl hover:from-amber-500 hover:to-amber-400 transition-colors flex items-center gap-2 shadow-lg shadow-amber-500/20"
+              className="px-8 py-4 btn-gold font-semibold rounded-2xl flex items-center gap-2"
               data-testid="analyze-btn"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -358,21 +358,21 @@ const CameraScanner = ({ onClose, onScanComplete, apiEndpoint }) => {
           <div className="flex flex-col items-center gap-4">
             <button
               onClick={captureImage}
-              className="w-20 h-20 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 border-4 border-amber-400/50 flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-amber-500/30"
+              className="w-20 h-20 rounded-full bg-gradient-to-r from-gold to-yellow-600 border-4 border-gold/50 flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-gold/30"
               data-testid="capture-btn"
             >
-              <div className="w-14 h-14 rounded-full border-2 border-slate-950/30"></div>
+              <div className="w-14 h-14 rounded-full border-2 border-emerald-950/30"></div>
             </button>
-            <p className="text-slate-400 text-sm">Tap to capture</p>
+            <p className="text-emerald-100/60 text-sm">Tap to capture</p>
           </div>
         ) : null}
 
         {/* Detection info */}
         <div className="mt-6 text-center">
-          <p className="text-slate-500 text-xs">
+          <p className="text-emerald-100/40 text-xs">
             Detects: Brand, Model, Dial Color, Bezel, Bracelet
           </p>
-          <p className="text-amber-500/60 text-xs mt-1">
+          <p className="text-gold/60 text-xs mt-1">
             ⚠️ Does not verify authenticity or determine year
           </p>
         </div>
