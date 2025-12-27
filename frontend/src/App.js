@@ -48,9 +48,11 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [showPortfolio, setShowPortfolio] = useState(false);
   const [scanHistory, setScanHistory] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [currencies, setCurrencies] = useState({});
+  const [exchangeRateInfo, setExchangeRateInfo] = useState(null);
   const [referenceData, setReferenceData] = useState({
     brands: [],
     models: [],
