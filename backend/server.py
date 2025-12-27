@@ -1504,10 +1504,12 @@ async def analyze_watch_image(file: UploadFile = File(...)):
         media_type = file.content_type or "image/jpeg"
         
         brands_list = ", ".join(WATCH_DATA.keys())
-        response = openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": f"""You are an expert luxury watch appraiser. Analyze the watch image and identify:
+        
+        # Use emergentintegrations LlmChat for image analysis
+        chat = LlmChat(
+            api_key=EMERGENT_API_KEY,
+            session_id=f"watch-analysis-{uuid.uuid4()}",
+            system_message=f"""You are an expert luxury watch appraiser. Analyze watch images and identify:
 1. Brand (from: {brands_list})
 2. Model family
 3. Dial color
@@ -1515,13 +1517,22 @@ async def analyze_watch_image(file: UploadFile = File(...)):
 5. Bracelet type
 6. Reference number (if visible)
 7. Condition
-Respond in JSON: {{"brand": "", "model": "", "dial_color": "", "bezel_type": "", "bracelet_type": "", "reference_number": "", "condition": "", "confidence": 0.0, "description": ""}}"""},
-                {"role": "user", "content": [{"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{base64_image}"}}, {"type": "text", "text": "Analyze this watch image."}]}
-            ],
-            max_tokens=500
+Always respond in valid JSON format: {{"brand": "", "model": "", "dial_color": "", "bezel_type": "", "bracelet_type": "", "reference_number": "", "condition": "", "confidence": 0.0, "description": ""}}"""
         )
         
-        result_text = response.choices[0].message.content
+        # Create file content for image
+        file_content = FileContent(content_type=media_type, file_content_base64=base64_image)
+        
+        # Send message with image
+        response_text = await chat.send_message(
+            UserMessage(
+                text="Analyze this watch image and identify all details. Return only valid JSON.",
+                file_contents=[file_content]
+            )
+        )
+        
+        # Parse the response
+        result_text = response_text
         try:
             if "```json" in result_text:
                 result_text = result_text.split("```json")[1].split("```")[0]
