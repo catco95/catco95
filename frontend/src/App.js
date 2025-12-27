@@ -599,7 +599,11 @@ const PortfolioModal = ({ isOpen, onClose, brands, brandModels, options }) => {
 
   useEffect(() => {
     if (isOpen) {
-      fetchPortfolio();
+      // Using setTimeout to avoid synchronous setState warning
+      const timeoutId = setTimeout(() => {
+        fetchPortfolio();
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [isOpen, fetchPortfolio]);
 
