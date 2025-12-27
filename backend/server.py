@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,8 +9,12 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import random
+import base64
+import io
+import json
+from openai import OpenAI
 
 
 ROOT_DIR = Path(__file__).parent
@@ -20,61 +25,91 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# OpenAI client for AI vision
+openai_client = OpenAI(
+    api_key=os.environ.get('EMERGENT_LLM_KEY'),
+    base_url="https://api.emergentagi.com/v1"
+)
+
 # Create the main app without a prefix
 app = FastAPI()
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Watch brands and their models
+# Watch brands and their models with extended data
 WATCH_DATA = {
     "Rolex": {
         "models": ["Submariner", "Daytona", "GMT-Master II", "Datejust", "Day-Date", "Explorer", "Sea-Dweller", "Yacht-Master", "Sky-Dweller", "Milgauss", "Air-King"],
-        "base_values": {"Submariner": 12500, "Daytona": 23000, "GMT-Master II": 15000, "Datejust": 8500, "Day-Date": 28000, "Explorer": 9000, "Sea-Dweller": 14000, "Yacht-Master": 12000, "Sky-Dweller": 35000, "Milgauss": 9500, "Air-King": 7500}
+        "base_values": {"Submariner": 12500, "Daytona": 23000, "GMT-Master II": 15000, "Datejust": 8500, "Day-Date": 28000, "Explorer": 9000, "Sea-Dweller": 14000, "Yacht-Master": 12000, "Sky-Dweller": 35000, "Milgauss": 9500, "Air-King": 7500},
+        "trend": 2.5,  # YoY growth percentage
+        "volatility": "low"
     },
     "Patek Philippe": {
         "models": ["Nautilus", "Aquanaut", "Calatrava", "Grand Complications", "Complications", "Twenty~4", "Golden Ellipse"],
-        "base_values": {"Nautilus": 85000, "Aquanaut": 45000, "Calatrava": 25000, "Grand Complications": 150000, "Complications": 55000, "Twenty~4": 18000, "Golden Ellipse": 22000}
+        "base_values": {"Nautilus": 85000, "Aquanaut": 45000, "Calatrava": 25000, "Grand Complications": 150000, "Complications": 55000, "Twenty~4": 18000, "Golden Ellipse": 22000},
+        "trend": -1.2,
+        "volatility": "medium"
     },
     "Audemars Piguet": {
         "models": ["Royal Oak", "Royal Oak Offshore", "Royal Oak Concept", "Code 11.59", "Millenary", "Jules Audemars"],
-        "base_values": {"Royal Oak": 35000, "Royal Oak Offshore": 28000, "Royal Oak Concept": 95000, "Code 11.59": 25000, "Millenary": 18000, "Jules Audemars": 22000}
+        "base_values": {"Royal Oak": 35000, "Royal Oak Offshore": 28000, "Royal Oak Concept": 95000, "Code 11.59": 25000, "Millenary": 18000, "Jules Audemars": 22000},
+        "trend": 1.8,
+        "volatility": "medium"
     },
     "Omega": {
         "models": ["Speedmaster", "Seamaster", "Constellation", "De Ville", "Planet Ocean", "Aqua Terra"],
-        "base_values": {"Speedmaster": 6500, "Seamaster": 5500, "Constellation": 4500, "De Ville": 4000, "Planet Ocean": 6000, "Aqua Terra": 5000}
+        "base_values": {"Speedmaster": 6500, "Seamaster": 5500, "Constellation": 4500, "De Ville": 4000, "Planet Ocean": 6000, "Aqua Terra": 5000},
+        "trend": 3.2,
+        "volatility": "low"
     },
     "Tudor": {
         "models": ["Black Bay", "Pelagos", "Ranger", "Royal", "1926", "Glamour"],
-        "base_values": {"Black Bay": 3800, "Pelagos": 4200, "Ranger": 2800, "Royal": 2500, "1926": 2200, "Glamour": 2800}
+        "base_values": {"Black Bay": 3800, "Pelagos": 4200, "Ranger": 2800, "Royal": 2500, "1926": 2200, "Glamour": 2800},
+        "trend": 4.5,
+        "volatility": "low"
     },
     "Cartier": {
         "models": ["Santos", "Tank", "Ballon Bleu", "Pasha", "Panthere", "Drive", "Ronde"],
-        "base_values": {"Santos": 7500, "Tank": 6000, "Ballon Bleu": 5500, "Pasha": 6500, "Panthere": 4500, "Drive": 5000, "Ronde": 4000}
+        "base_values": {"Santos": 7500, "Tank": 6000, "Ballon Bleu": 5500, "Pasha": 6500, "Panthere": 4500, "Drive": 5000, "Ronde": 4000},
+        "trend": 2.1,
+        "volatility": "low"
     },
     "IWC": {
         "models": ["Portugieser", "Pilot", "Portofino", "Aquatimer", "Ingenieur", "Da Vinci"],
-        "base_values": {"Portugieser": 8500, "Pilot": 6500, "Portofino": 5500, "Aquatimer": 6000, "Ingenieur": 7000, "Da Vinci": 6500}
+        "base_values": {"Portugieser": 8500, "Pilot": 6500, "Portofino": 5500, "Aquatimer": 6000, "Ingenieur": 7000, "Da Vinci": 6500},
+        "trend": 1.5,
+        "volatility": "medium"
     },
     "Panerai": {
         "models": ["Luminor", "Radiomir", "Submersible", "Luminor Due"],
-        "base_values": {"Luminor": 7500, "Radiomir": 7000, "Submersible": 9000, "Luminor Due": 6500}
+        "base_values": {"Luminor": 7500, "Radiomir": 7000, "Submersible": 9000, "Luminor Due": 6500},
+        "trend": -0.5,
+        "volatility": "medium"
     },
     "Breitling": {
         "models": ["Navitimer", "Superocean", "Chronomat", "Avenger", "Premier", "Professional"],
-        "base_values": {"Navitimer": 6500, "Superocean": 4500, "Chronomat": 5500, "Avenger": 5000, "Premier": 5500, "Professional": 3500}
+        "base_values": {"Navitimer": 6500, "Superocean": 4500, "Chronomat": 5500, "Avenger": 5000, "Premier": 5500, "Professional": 3500},
+        "trend": 2.8,
+        "volatility": "low"
     },
     "Jaeger-LeCoultre": {
         "models": ["Reverso", "Master", "Polaris", "Rendez-Vous", "Duometre", "Atmos"],
-        "base_values": {"Reverso": 9000, "Master": 8000, "Polaris": 10000, "Rendez-Vous": 8500, "Duometre": 25000, "Atmos": 6000}
+        "base_values": {"Reverso": 9000, "Master": 8000, "Polaris": 10000, "Rendez-Vous": 8500, "Duometre": 25000, "Atmos": 6000},
+        "trend": 1.2,
+        "volatility": "low"
     },
     "Vacheron Constantin": {
         "models": ["Overseas", "Patrimony", "Traditionnelle", "Fiftysix", "Historiques", "Metiers d'Art"],
-        "base_values": {"Overseas": 28000, "Patrimony": 22000, "Traditionnelle": 35000, "Fiftysix": 15000, "Historiques": 45000, "Metiers d'Art": 85000}
+        "base_values": {"Overseas": 28000, "Patrimony": 22000, "Traditionnelle": 35000, "Fiftysix": 15000, "Historiques": 45000, "Metiers d'Art": 85000},
+        "trend": 0.8,
+        "volatility": "medium"
     },
     "A. Lange & Söhne": {
         "models": ["Lange 1", "Saxonia", "Zeitwerk", "Datograph", "Richard Lange", "1815"],
-        "base_values": {"Lange 1": 35000, "Saxonia": 18000, "Zeitwerk": 75000, "Datograph": 85000, "Richard Lange": 45000, "1815": 28000}
+        "base_values": {"Lange 1": 35000, "Saxonia": 18000, "Zeitwerk": 75000, "Datograph": 85000, "Richard Lange": 45000, "1815": 28000},
+        "trend": 1.0,
+        "volatility": "low"
     }
 }
 
@@ -172,6 +207,17 @@ class PortfolioWatchCreate(BaseModel):
     purchase_date: Optional[str] = None
     notes: Optional[str] = None
 
+class ImageAnalysisResult(BaseModel):
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    dial_color: Optional[str] = None
+    bezel_type: Optional[str] = None
+    bracelet_type: Optional[str] = None
+    reference_number: Optional[str] = None
+    condition: Optional[str] = None
+    confidence: float = 0.0
+    description: str = ""
+
 def calculate_valuation(brand: str, model: str, condition: str, has_box_papers: bool, calibration_mode: str, currency: str) -> Dict[str, Any]:
     """Calculate watch valuation based on inputs"""
     if brand not in WATCH_DATA:
@@ -222,6 +268,44 @@ def calculate_valuation(brand: str, model: str, condition: str, has_box_papers: 
         "mid_estimate": round(mid, -2),
         "high_estimate": round(high, -2)
     }
+
+def generate_price_history(brand: str, model: str, months: int = 12) -> List[Dict[str, Any]]:
+    """Generate simulated price history for a watch"""
+    if brand not in WATCH_DATA or model not in WATCH_DATA[brand]["base_values"]:
+        return []
+    
+    base_value = WATCH_DATA[brand]["base_values"][model]
+    trend = WATCH_DATA[brand].get("trend", 0) / 12  # Monthly trend
+    volatility = WATCH_DATA[brand].get("volatility", "medium")
+    
+    vol_factor = {"low": 0.02, "medium": 0.04, "high": 0.06}.get(volatility, 0.03)
+    
+    history = []
+    current_value = base_value
+    
+    for i in range(months, 0, -1):
+        date = datetime.now(timezone.utc) - timedelta(days=i * 30)
+        # Add trend and random noise
+        noise = random.uniform(-vol_factor, vol_factor)
+        monthly_change = (trend / 100) + noise
+        current_value = current_value * (1 - monthly_change)  # Go backwards in time
+        
+        history.append({
+            "date": date.strftime("%Y-%m-%d"),
+            "value": round(current_value, -2),
+            "change_pct": round(monthly_change * 100, 2)
+        })
+    
+    # Reverse to get chronological order
+    history.reverse()
+    
+    # Recalculate with current price at end
+    current_value = base_value
+    for i, entry in enumerate(reversed(history)):
+        entry["value"] = round(current_value, -2)
+        current_value = current_value / (1 + (trend / 100) + random.uniform(-vol_factor/2, vol_factor/2))
+    
+    return history
 
 # API Routes
 @api_router.get("/")
@@ -417,6 +501,168 @@ async def compare_watches(brand1: str, model1: str, brand2: str, model2: str, cu
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# AI Image Analysis
+@api_router.post("/analyze-image", response_model=ImageAnalysisResult)
+async def analyze_watch_image(file: UploadFile = File(...)):
+    """Analyze a watch image using AI vision"""
+    try:
+        # Read and encode the image
+        contents = await file.read()
+        base64_image = base64.b64encode(contents).decode('utf-8')
+        
+        # Determine the media type
+        media_type = file.content_type or "image/jpeg"
+        
+        # Use OpenAI Vision API
+        response = openai_client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are an expert luxury watch appraiser and identifier. Analyze the watch image and identify:
+1. Brand (from: Rolex, Patek Philippe, Audemars Piguet, Omega, Tudor, Cartier, IWC, Panerai, Breitling, Jaeger-LeCoultre, Vacheron Constantin, A. Lange & Söhne)
+2. Model family
+3. Dial color
+4. Bezel type
+5. Bracelet type
+6. Reference number (if visible)
+7. Condition assessment
+
+Respond in JSON format with these fields: brand, model, dial_color, bezel_type, bracelet_type, reference_number, condition, confidence (0-1), description"""
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{media_type};base64,{base64_image}"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "Please analyze this watch image and identify all details. Return your response as a valid JSON object."
+                        }
+                    ]
+                }
+            ],
+            max_tokens=500
+        )
+        
+        # Parse the response
+        result_text = response.choices[0].message.content
+        
+        # Try to extract JSON from the response
+        try:
+            # Handle markdown code blocks
+            if "```json" in result_text:
+                result_text = result_text.split("```json")[1].split("```")[0]
+            elif "```" in result_text:
+                result_text = result_text.split("```")[1].split("```")[0]
+            
+            result_data = json.loads(result_text.strip())
+        except json.JSONDecodeError:
+            # If JSON parsing fails, return a basic result
+            result_data = {
+                "brand": None,
+                "model": None,
+                "description": result_text,
+                "confidence": 0.5
+            }
+        
+        return ImageAnalysisResult(
+            brand=result_data.get("brand"),
+            model=result_data.get("model"),
+            dial_color=result_data.get("dial_color"),
+            bezel_type=result_data.get("bezel_type"),
+            bracelet_type=result_data.get("bracelet_type"),
+            reference_number=result_data.get("reference_number"),
+            condition=result_data.get("condition"),
+            confidence=float(result_data.get("confidence", 0.5)),
+            description=result_data.get("description", "")
+        )
+        
+    except Exception as e:
+        logger.error(f"Image analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Image analysis failed: {str(e)}")
+
+# Price History
+@api_router.get("/price-history/{brand}/{model}")
+async def get_price_history(brand: str, model: str, months: int = 12):
+    """Get price history for a watch"""
+    if brand not in WATCH_DATA:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand}' not found")
+    if model not in WATCH_DATA[brand]["base_values"]:
+        raise HTTPException(status_code=404, detail=f"Model '{model}' not found")
+    
+    history = generate_price_history(brand, model, months)
+    current_price = WATCH_DATA[brand]["base_values"][model]
+    
+    return {
+        "brand": brand,
+        "model": model,
+        "current_price": current_price,
+        "history": history,
+        "trend": WATCH_DATA[brand].get("trend", 0),
+        "volatility": WATCH_DATA[brand].get("volatility", "medium")
+    }
+
+# Market Trends
+@api_router.get("/market-trends")
+async def get_market_trends():
+    """Get overall market trends"""
+    trends = []
+    for brand, data in WATCH_DATA.items():
+        avg_value = sum(data["base_values"].values()) / len(data["base_values"])
+        trends.append({
+            "brand": brand,
+            "average_value": round(avg_value, -2),
+            "trend_yoy": data.get("trend", 0),
+            "volatility": data.get("volatility", "medium"),
+            "top_model": max(data["base_values"], key=data["base_values"].get),
+            "top_model_value": max(data["base_values"].values())
+        })
+    
+    # Sort by trend
+    trends.sort(key=lambda x: x["trend_yoy"], reverse=True)
+    
+    # Calculate market summary
+    total_avg = sum(t["average_value"] for t in trends) / len(trends)
+    avg_trend = sum(t["trend_yoy"] for t in trends) / len(trends)
+    
+    return {
+        "brands": trends,
+        "market_summary": {
+            "average_brand_value": round(total_avg, -2),
+            "average_trend_yoy": round(avg_trend, 2),
+            "top_performer": trends[0]["brand"] if trends else None,
+            "most_stable": min(trends, key=lambda x: abs(x["trend_yoy"]))["brand"] if trends else None
+        }
+    }
+
+# Export Portfolio
+@api_router.get("/portfolio/export")
+async def export_portfolio(format: str = "csv"):
+    """Export portfolio data as CSV or JSON"""
+    watches = await db.portfolio.find({}, {"_id": 0}).to_list(100)
+    
+    if format == "json":
+        return {"portfolio": watches}
+    
+    # CSV export
+    csv_data = "Brand,Model,Condition,Box & Papers,Purchase Price,Current Value,Purchase Date,Notes\n"
+    for watch in watches:
+        csv_data += f"{watch.get('brand', '')},{watch.get('model', '')},{watch.get('condition', '')},"
+        csv_data += f"{'Yes' if watch.get('has_box_papers') else 'No'},{watch.get('purchase_price', '')},"
+        csv_data += f"{watch.get('current_valuation', '')},{watch.get('purchase_date', '')},"
+        csv_data += f"\"{watch.get('notes', '')}\"\n"
+    
+    return StreamingResponse(
+        io.StringIO(csv_data),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=portfolio.csv"}
+    )
 
 # Include the router in the main app
 app.include_router(api_router)
