@@ -13,6 +13,9 @@ import CameraScanner from "@/components/CameraScanner";
 import CalibrationSelector from "@/components/CalibrationSelector";
 import ScanHistory from "@/components/ScanHistory";
 import CurrencySelector from "@/components/CurrencySelector";
+import WatchComparison from "@/components/WatchComparison";
+import MarketInsights from "@/components/MarketInsights";
+import { generateValuationPDF } from "@/utils/pdfExport";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
