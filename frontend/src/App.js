@@ -83,7 +83,7 @@ const HomePage = () => {
           axios.get(`${API}/watch-data/brands`),
           axios.get(`${API}/watch-data/conditions`),
           axios.get(`${API}/scan-history?limit=10`),
-          axios.get(`${API}/currencies`)
+          axios.get(`${API}/currencies/live`)
         ]);
         setReferenceData(prev => ({
           ...prev,
@@ -92,6 +92,10 @@ const HomePage = () => {
         }));
         setScanHistory(historyRes.data || []);
         setCurrencies(currenciesRes.data.currencies || {});
+        setExchangeRateInfo({
+          cached: currenciesRes.data.cached,
+          lastUpdated: currenciesRes.data.last_updated
+        });
       } catch (error) {
         console.error("Failed to fetch reference data:", error);
       }
