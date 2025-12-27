@@ -924,6 +924,49 @@ async def get_currencies():
     """Get available currencies with exchange rates"""
     return {"currencies": CURRENCIES}
 
+@api_router.get("/currencies/live")
+async def get_live_exchange_rates():
+    """Get live exchange rates (cached for 1 hour)"""
+    global exchange_rate_cache
+    
+    # Check cache
+    if exchange_rate_cache["last_updated"]:
+        cache_age = datetime.now(timezone.utc) - exchange_rate_cache["last_updated"]
+        if cache_age < timedelta(hours=1):
+            return {"currencies": exchange_rate_cache["rates"], "cached": True, "last_updated": exchange_rate_cache["last_updated"].isoformat()}
+    
+    # Try to fetch live rates (using free API)
+    try:
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.get(
+                "https://api.exchangerate-api.com/v4/latest/USD",
+                timeout=10.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                rates = data.get("rates", {})
+                
+                # Update our currencies with live rates
+                live_currencies = {}
+                for code, info in CURRENCIES.items():
+                    rate = rates.get(code, info["rate"])
+                    live_currencies[code] = {
+                        "symbol": info["symbol"],
+                        "name": info["name"],
+                        "rate": round(rate, 4)
+                    }
+                
+                # Update cache
+                exchange_rate_cache["rates"] = live_currencies
+                exchange_rate_cache["last_updated"] = datetime.now(timezone.utc)
+                
+                return {"currencies": live_currencies, "cached": False, "last_updated": exchange_rate_cache["last_updated"].isoformat()}
+    except Exception as e:
+        logging.warning(f"Failed to fetch live rates: {e}")
+    
+    # Fallback to static rates
+    return {"currencies": CURRENCIES, "cached": True, "last_updated": None}
+
 @api_router.get("/calibration-modes")
 async def get_calibration_modes():
     """Get available dealer calibration modes"""
