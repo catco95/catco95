@@ -46,6 +46,7 @@ const HomePage = () => {
   const [calibrationMode, setCalibrationMode] = useState("market_neutral");
   const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
   const [scanHistory, setScanHistory] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [currencies, setCurrencies] = useState({});
@@ -55,6 +56,21 @@ const HomePage = () => {
     attributes: {},
     conditions: []
   });
+
+  // PDF Export handler
+  const handleExportPDF = () => {
+    if (!valuation || !watchData.brand) {
+      toast.error("Please calculate a valuation first");
+      return;
+    }
+    try {
+      const filename = generateValuationPDF(watchData, valuation, selectedCurrency, currencies);
+      toast.success(`PDF exported: ${filename}`);
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Failed to export PDF");
+    }
+  };
 
   // Fetch reference data and scan history
   useEffect(() => {
