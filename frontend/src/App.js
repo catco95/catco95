@@ -12,6 +12,7 @@ import ValuationDisplay from "@/components/ValuationDisplay";
 import CameraScanner from "@/components/CameraScanner";
 import CalibrationSelector from "@/components/CalibrationSelector";
 import ScanHistory from "@/components/ScanHistory";
+import CurrencySelector from "@/components/CurrencySelector";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -43,6 +44,8 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [scanHistory, setScanHistory] = useState([]);
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [currencies, setCurrencies] = useState({});
   const [referenceData, setReferenceData] = useState({
     brands: [],
     models: [],
@@ -54,10 +57,11 @@ const HomePage = () => {
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
-        const [brandsRes, conditionsRes, historyRes] = await Promise.all([
+        const [brandsRes, conditionsRes, historyRes, currenciesRes] = await Promise.all([
           axios.get(`${API}/watch-data/brands`),
           axios.get(`${API}/watch-data/conditions`),
-          axios.get(`${API}/scan-history?limit=10`)
+          axios.get(`${API}/scan-history?limit=10`),
+          axios.get(`${API}/currencies`)
         ]);
         setReferenceData(prev => ({
           ...prev,
@@ -65,6 +69,7 @@ const HomePage = () => {
           conditions: conditionsRes.data.conditions
         }));
         setScanHistory(historyRes.data || []);
+        setCurrencies(currenciesRes.data.currencies || {});
       } catch (error) {
         console.error("Failed to fetch reference data:", error);
       }
