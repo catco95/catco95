@@ -15,10 +15,10 @@ import random
 import base64
 import io
 import json
-from openai import OpenAI
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 import httpx
+from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContent
 
 
 ROOT_DIR = Path(__file__).parent
@@ -29,11 +29,8 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# OpenAI client for AI vision
-openai_client = OpenAI(
-    api_key=os.environ.get('EMERGENT_LLM_KEY'),
-    base_url="https://api.emergentagi.com/v1"
-)
+# Emergent API Key
+EMERGENT_API_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 
 # JWT Configuration
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'crowntime-ai-secret-key-2024-very-secure')
