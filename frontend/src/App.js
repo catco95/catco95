@@ -15,6 +15,7 @@ import ScanHistory from "@/components/ScanHistory";
 import CurrencySelector from "@/components/CurrencySelector";
 import WatchComparison from "@/components/WatchComparison";
 import MarketInsights from "@/components/MarketInsights";
+import PortfolioTracker from "@/components/PortfolioTracker";
 import { generateValuationPDF } from "@/utils/pdfExport";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
