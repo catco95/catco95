@@ -286,11 +286,19 @@ const PriceHistoryChart = ({ brand, model, isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen && brand && model) {
-      setLoading(true);
-      axios.get(`${API}/price-history/${encodeURIComponent(brand)}/${encodeURIComponent(model)}`)
-        .then(res => setData(res.data))
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const res = await axios.get(`${API}/price-history/${encodeURIComponent(brand)}/${encodeURIComponent(model)}`);
+          setData(res.data);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      const timeoutId = setTimeout(fetchData, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [isOpen, brand, model]);
 
