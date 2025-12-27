@@ -1085,6 +1085,216 @@ async def clear_scan_history():
     await db.scan_history.delete_many({})
     return {"message": "History cleared"}
 
+# ============== PORTFOLIO ENDPOINTS ==============
+@api_router.post("/portfolio", response_model=PortfolioWatch)
+async def add_to_portfolio(watch: PortfolioWatchCreate):
+    """Add a watch to the portfolio"""
+    
+    portfolio_watch = PortfolioWatch(**watch.model_dump())
+    doc = portfolio_watch.model_dump()
+    doc['added_at'] = doc['added_at'].isoformat()
+    
+    await db.portfolio.insert_one(doc)
+    return portfolio_watch
+
+@api_router.get("/portfolio", response_model=List[PortfolioWatch])
+async def get_portfolio():
+    """Get all watches in portfolio"""
+    
+    watches = await db.portfolio.find({}, {"_id": 0}).sort("added_at", -1).to_list(100)
+    for watch in watches:
+        if isinstance(watch.get('added_at'), str):
+            watch['added_at'] = datetime.fromisoformat(watch['added_at'])
+    return watches
+
+@api_router.get("/portfolio/{watch_id}")
+async def get_portfolio_watch(watch_id: str):
+    """Get a specific watch from portfolio with current valuation"""
+    
+    watch = await db.portfolio.find_one({"id": watch_id}, {"_id": 0})
+    if not watch:
+        raise HTTPException(status_code=404, detail="Watch not found")
+    
+    # Calculate current valuation
+    watch_details = WatchDetails(
+        brand=watch["brand"],
+        model_family=watch["model_family"],
+        dial_color=watch.get("dial_color"),
+        bezel_type=watch.get("bezel_type"),
+        bracelet_type=watch.get("bracelet_type"),
+        condition=watch.get("condition", "Very Good"),
+        box_papers=watch.get("box_papers", False)
+    )
+    
+    valuation = calculate_valuation(watch_details, "market_neutral", ["brand", "model_family"])
+    
+    # Calculate gain/loss if purchase price exists
+    gain_loss = None
+    gain_loss_pct = None
+    if watch.get("purchase_price"):
+        gain_loss = valuation.fair_estimate - watch["purchase_price"]
+        gain_loss_pct = round((gain_loss / watch["purchase_price"]) * 100, 1)
+    
+    return {
+        "watch": watch,
+        "current_valuation": valuation.model_dump(),
+        "gain_loss": gain_loss,
+        "gain_loss_percentage": gain_loss_pct
+    }
+
+@api_router.delete("/portfolio/{watch_id}")
+async def remove_from_portfolio(watch_id: str):
+    """Remove a watch from portfolio"""
+    
+    result = await db.portfolio.delete_one({"id": watch_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Watch not found")
+    return {"message": "Watch removed from portfolio"}
+
+@api_router.get("/portfolio/summary/stats")
+async def get_portfolio_summary():
+    """Get portfolio summary with total value and performance"""
+    
+    watches = await db.portfolio.find({}, {"_id": 0}).to_list(100)
+    
+    if not watches:
+        return {
+            "total_watches": 0,
+            "total_current_value": 0,
+            "total_purchase_value": 0,
+            "total_gain_loss": 0,
+            "total_gain_loss_percentage": 0,
+            "watches_by_brand": {}
+        }
+    
+    total_current = 0
+    total_purchase = 0
+    brand_counts = {}
+    
+    for watch in watches:
+        # Calculate current value
+        watch_details = WatchDetails(
+            brand=watch["brand"],
+            model_family=watch["model_family"],
+            dial_color=watch.get("dial_color"),
+            bezel_type=watch.get("bezel_type"),
+            bracelet_type=watch.get("bracelet_type"),
+            condition=watch.get("condition", "Very Good"),
+            box_papers=watch.get("box_papers", False)
+        )
+        valuation = calculate_valuation(watch_details, "market_neutral", ["brand", "model_family"])
+        total_current += valuation.fair_estimate
+        
+        if watch.get("purchase_price"):
+            total_purchase += watch["purchase_price"]
+        
+        # Count by brand
+        brand = watch["brand"]
+        brand_counts[brand] = brand_counts.get(brand, 0) + 1
+    
+    gain_loss = total_current - total_purchase if total_purchase > 0 else 0
+    gain_loss_pct = round((gain_loss / total_purchase) * 100, 1) if total_purchase > 0 else 0
+    
+    return {
+        "total_watches": len(watches),
+        "total_current_value": total_current,
+        "total_purchase_value": total_purchase,
+        "total_gain_loss": gain_loss,
+        "total_gain_loss_percentage": gain_loss_pct,
+        "watches_by_brand": brand_counts
+    }
+
+# ============== PRICE TRENDS ENDPOINT ==============
+@api_router.get("/price-trends/{brand}/{model}")
+async def get_price_trends(brand: str, model: str, months: int = 12):
+    """Get simulated price trend data for a watch model"""
+    
+    # Get base valuation
+    watch_details = WatchDetails(brand=brand, model_family=model, condition="Very Good")
+    current_val = calculate_valuation(watch_details, "market_neutral", ["brand", "model_family"])
+    
+    # Generate historical trend data (simulated but realistic)
+    trend_data = []
+    base_price = current_val.fair_estimate
+    
+    # Market volatility factors by brand
+    volatility = {
+        "Rolex": 0.02,
+        "Patek Philippe": 0.03,
+        "Audemars Piguet": 0.025,
+        "Omega": 0.015,
+        "Tudor": 0.018,
+        "Cartier": 0.012,
+        "IWC": 0.015,
+        "Breitling": 0.02,
+        "Panerai": 0.018,
+        "Vacheron Constantin": 0.022,
+        "Jaeger-LeCoultre": 0.015,
+        "A. Lange & Söhne": 0.025,
+        "Hublot": 0.03,
+        "TAG Heuer": 0.02,
+        "Zenith": 0.018
+    }.get(brand, 0.02)
+    
+    # Generate monthly data points going back
+    current_date = datetime.now()
+    
+    # Start from earlier and trend toward current
+    historical_base = base_price * random.uniform(0.85, 1.05)
+    
+    for i in range(months, -1, -1):
+        date = current_date - timedelta(days=i * 30)
+        
+        # Gradual trend toward current price with some noise
+        progress = 1 - (i / months)
+        trend_price = historical_base + (base_price - historical_base) * progress
+        
+        # Add random variation
+        variation = random.uniform(-volatility, volatility)
+        month_price = int(trend_price * (1 + variation))
+        
+        # Calculate bands
+        spread = 0.12 + random.uniform(-0.02, 0.02)
+        low_price = int(month_price * (1 - spread/2))
+        high_price = int(month_price * (1 + spread/2))
+        
+        trend_data.append({
+            "date": date.strftime("%Y-%m"),
+            "low": low_price,
+            "fair": month_price,
+            "high": high_price
+        })
+    
+    # Calculate trend metrics
+    if len(trend_data) >= 2:
+        start_price = trend_data[0]["fair"]
+        end_price = trend_data[-1]["fair"]
+        change = end_price - start_price
+        change_pct = round((change / start_price) * 100, 1)
+        
+        # Calculate average and volatility
+        prices = [p["fair"] for p in trend_data]
+        avg_price = sum(prices) / len(prices)
+        variance = sum((p - avg_price) ** 2 for p in prices) / len(prices)
+        std_dev = variance ** 0.5
+        volatility_pct = round((std_dev / avg_price) * 100, 1)
+    else:
+        change = 0
+        change_pct = 0
+        volatility_pct = 0
+    
+    return {
+        "brand": brand,
+        "model": model,
+        "current_value": current_val.fair_estimate,
+        "period_months": months,
+        "price_change": change,
+        "price_change_percentage": change_pct,
+        "volatility_percentage": volatility_pct,
+        "trend_direction": "up" if change_pct > 2 else "down" if change_pct < -2 else "stable",
+        "data": trend_data
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
