@@ -420,6 +420,20 @@ const HomePage = () => {
                 Reset
               </button>
             </div>
+
+            {/* Export PDF Button */}
+            {valuation && (
+              <button
+                onClick={handleExportPDF}
+                className="w-full py-3 px-4 bg-emerald-900/50 border border-emerald-700/50 text-emerald-100/70 rounded-xl hover:bg-emerald-800/50 hover:text-gold hover:border-gold/30 transition-all duration-300 flex items-center justify-center gap-2"
+                data-testid="export-pdf-btn"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export Valuation Report (PDF)
+              </button>
+            )}
           </div>
 
           {/* Right Column - Valuation Display */}
@@ -428,6 +442,14 @@ const HomePage = () => {
               valuation={valuation}
               confirmedFields={confirmedFields}
               totalFields={5}
+              currency={selectedCurrency}
+              currencies={currencies}
+            />
+
+            {/* Market Insights */}
+            <MarketInsights
+              valuation={valuation}
+              watchData={watchData}
               currency={selectedCurrency}
               currencies={currencies}
             />
