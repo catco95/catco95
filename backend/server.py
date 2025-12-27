@@ -350,7 +350,7 @@ async def add_to_portfolio(watch: PortfolioWatchCreate):
             currency="USD"
         )
         current_valuation = valuation_data["mid_estimate"]
-    except:
+    except Exception:
         current_valuation = None
     
     portfolio_watch = PortfolioWatch(
