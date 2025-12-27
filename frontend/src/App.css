@@ -1,4 +1,4 @@
-/* Crowntime AI - Luxury Dark Theme */
+/* Crowntime AI - British Racing Green & Gold Luxury Theme */
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -7,21 +7,21 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(0, 36, 19, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(251, 191, 36, 0.3);
+  background: rgba(212, 175, 55, 0.4);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(251, 191, 36, 0.5);
+  background: rgba(212, 175, 55, 0.6);
 }
 
 /* Selection color */
 ::selection {
-  background: rgba(251, 191, 36, 0.3);
+  background: rgba(212, 175, 55, 0.3);
   color: #fef3c7;
 }
 
@@ -32,28 +32,62 @@
   transition-duration: 150ms;
 }
 
+/* British Racing Green background classes */
+.bg-racing-green-950 {
+  background-color: #001a0d;
+}
+
+.bg-racing-green-900 {
+  background-color: #00261a;
+}
+
+.bg-racing-green-800 {
+  background-color: #003d29;
+}
+
+.bg-racing-green-700 {
+  background-color: #004d33;
+}
+
+/* Gold accent classes */
+.text-gold {
+  color: #d4af37;
+}
+
+.text-gold-light {
+  color: #e8c860;
+}
+
+.border-gold {
+  border-color: #d4af37;
+}
+
+.bg-gold {
+  background-color: #d4af37;
+}
+
 /* Luxury gold gradient text */
 .gold-gradient {
-  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%);
+  background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #f0d060 75%, #d4af37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Card glass effect */
+/* Card glass effect - Racing Green */
 .glass-card {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(0, 38, 26, 0.7);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.15);
 }
 
 /* Pulse animation for detected fields */
 @keyframes pulse-gold {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
+    box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
   }
 }
 
@@ -88,44 +122,44 @@
 .shimmer {
   background: linear-gradient(
     90deg,
-    rgba(15, 23, 42, 0) 0%,
-    rgba(251, 191, 36, 0.1) 50%,
-    rgba(15, 23, 42, 0) 100%
+    rgba(0, 38, 26, 0) 0%,
+    rgba(212, 175, 55, 0.1) 50%,
+    rgba(0, 38, 26, 0) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-/* Status badge styles */
+/* Status badge styles - Racing Green Theme */
 .status-detected {
-  background: rgba(251, 191, 36, 0.2);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  color: #fbbf24;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: #d4af37;
 }
 
 .status-suggested {
-  background: rgba(59, 130, 246, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  color: #60a5fa;
+  background: rgba(72, 187, 120, 0.2);
+  border: 1px solid rgba(72, 187, 120, 0.5);
+  color: #48bb78;
 }
 
 .status-confirmed {
-  background: rgba(34, 197, 94, 0.2);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  color: #4ade80;
+  background: rgba(56, 178, 172, 0.2);
+  border: 1px solid rgba(56, 178, 172, 0.5);
+  color: #38b2ac;
 }
 
 .status-unconfirmed {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #f87171;
+  background: rgba(237, 137, 54, 0.2);
+  border: 1px solid rgba(237, 137, 54, 0.5);
+  color: #ed8936;
 }
 
-/* Input focus styles */
+/* Input focus styles - Gold accent */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: rgba(251, 191, 36, 0.5) !important;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+  border-color: rgba(212, 175, 55, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 }
 
 /* Luxury serif font for headings */
@@ -133,23 +167,23 @@ input:focus, select:focus, textarea:focus {
   font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
 }
 
-/* Camera overlay gradient */
+/* Camera overlay gradient - Racing Green */
 .camera-overlay {
   background: linear-gradient(
     to bottom,
-    rgba(15, 23, 42, 0.9) 0%,
-    rgba(15, 23, 42, 0.3) 20%,
-    rgba(15, 23, 42, 0.3) 80%,
-    rgba(15, 23, 42, 0.9) 100%
+    rgba(0, 26, 13, 0.9) 0%,
+    rgba(0, 26, 13, 0.3) 20%,
+    rgba(0, 26, 13, 0.3) 80%,
+    rgba(0, 26, 13, 0.9) 100%
   );
 }
 
-/* Viewfinder corners */
+/* Viewfinder corners - Gold */
 .viewfinder-corner {
   position: absolute;
   width: 24px;
   height: 24px;
-  border-color: #fbbf24;
+  border-color: #d4af37;
 }
 
 .viewfinder-corner.top-left {
@@ -178,4 +212,27 @@ input:focus, select:focus, textarea:focus {
   right: 0;
   border-bottom: 3px solid;
   border-right: 3px solid;
+}
+
+/* Racing Green gradient backgrounds */
+.racing-green-gradient {
+  background: linear-gradient(135deg, #001a0d 0%, #00261a 50%, #003d29 100%);
+}
+
+/* Gold button hover effect */
+.btn-gold {
+  background: linear-gradient(135deg, #b8860b 0%, #d4af37 100%);
+  color: #001a0d;
+  transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #d4af37 0%, #f0d060 100%);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+}
+
+/* Racing green card borders */
+.racing-card {
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: linear-gradient(180deg, rgba(0, 38, 26, 0.8) 0%, rgba(0, 26, 13, 0.9) 100%);
 }
