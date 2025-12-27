@@ -31,7 +31,7 @@ app = FastAPI(title="Crowntime AI - Watch Market Intelligence")
 api_router = APIRouter(prefix="/api")
 
 # ============== WATCH DATA ==============
-# Comprehensive luxury watch database with trade-level pricing
+# Comprehensive luxury watch database with trade-level pricing (USD base)
 WATCH_DATABASE = {
     "Rolex": {
         "Submariner": {
@@ -81,6 +81,22 @@ WATCH_DATABASE = {
             "bezel_types": ["Smooth"],
             "bracelet_types": ["Oyster"],
             "price_modifiers": {}
+        },
+        "Sky-Dweller": {
+            "reference_patterns": ["326934", "326933", "326935", "336934"],
+            "base_trade_price": 22000,
+            "dial_colors": ["Blue", "White", "Black", "Champagne"],
+            "bezel_types": ["Fluted Command"],
+            "bracelet_types": ["Oyster", "Jubilee", "Oysterflex"],
+            "price_modifiers": {"Blue": 1.1}
+        },
+        "Yacht-Master": {
+            "reference_patterns": ["126621", "126622", "226659", "126655"],
+            "base_trade_price": 14000,
+            "dial_colors": ["Slate", "Blue", "Black", "White"],
+            "bezel_types": ["Platinum", "Rose Gold", "Ceramic"],
+            "bracelet_types": ["Oyster", "Oysterflex"],
+            "price_modifiers": {"Ceramic": 1.15}
         }
     },
     "Patek Philippe": {
@@ -107,6 +123,14 @@ WATCH_DATABASE = {
             "bezel_types": ["Smooth", "Hobnail"],
             "bracelet_types": ["Leather"],
             "price_modifiers": {}
+        },
+        "Grand Complications": {
+            "reference_patterns": ["5270", "5204", "5320", "6300"],
+            "base_trade_price": 180000,
+            "dial_colors": ["White", "Blue", "Salmon", "Black"],
+            "bezel_types": ["Smooth"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {"Salmon": 1.2}
         }
     },
     "Audemars Piguet": {
@@ -125,6 +149,14 @@ WATCH_DATABASE = {
             "bezel_types": ["Ceramic", "Steel"],
             "bracelet_types": ["Rubber", "Steel"],
             "price_modifiers": {"Ceramic": 1.1}
+        },
+        "Code 11.59": {
+            "reference_patterns": ["15210", "26393", "26396"],
+            "base_trade_price": 25000,
+            "dial_colors": ["Blue", "Grey", "Burgundy", "Green"],
+            "bezel_types": ["Octagonal"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {"Burgundy": 1.1}
         }
     },
     "Omega": {
@@ -143,8 +175,356 @@ WATCH_DATABASE = {
             "bezel_types": ["Ceramic", "Aluminum"],
             "bracelet_types": ["Steel", "Rubber"],
             "price_modifiers": {"Green": 1.1}
+        },
+        "Seamaster Planet Ocean": {
+            "reference_patterns": ["215.30", "215.32", "232.30"],
+            "base_trade_price": 5800,
+            "dial_colors": ["Black", "Blue", "Orange"],
+            "bezel_types": ["Ceramic"],
+            "bracelet_types": ["Steel", "Rubber"],
+            "price_modifiers": {"Orange": 1.05}
+        },
+        "Constellation": {
+            "reference_patterns": ["131.30", "131.10", "123.10"],
+            "base_trade_price": 4500,
+            "dial_colors": ["Silver", "Blue", "Green", "Black"],
+            "bezel_types": ["Fluted"],
+            "bracelet_types": ["Steel", "Leather"],
+            "price_modifiers": {}
+        }
+    },
+    "Tudor": {
+        "Black Bay": {
+            "reference_patterns": ["79230", "79360", "79830"],
+            "base_trade_price": 3200,
+            "dial_colors": ["Black", "Blue", "Red"],
+            "bezel_types": ["Aluminum", "Steel"],
+            "bracelet_types": ["Steel", "Fabric", "Leather"],
+            "price_modifiers": {"Red": 1.05}
+        },
+        "Black Bay 58": {
+            "reference_patterns": ["79030", "79030B", "79030N"],
+            "base_trade_price": 3500,
+            "dial_colors": ["Black", "Blue", "Bronze"],
+            "bezel_types": ["Aluminum"],
+            "bracelet_types": ["Steel", "Fabric"],
+            "price_modifiers": {"Bronze": 1.1}
+        },
+        "Pelagos": {
+            "reference_patterns": ["25600", "25610"],
+            "base_trade_price": 4200,
+            "dial_colors": ["Black", "Blue"],
+            "bezel_types": ["Ceramic"],
+            "bracelet_types": ["Titanium", "Rubber"],
+            "price_modifiers": {}
+        },
+        "Royal": {
+            "reference_patterns": ["28600", "28300"],
+            "base_trade_price": 2800,
+            "dial_colors": ["Black", "Blue", "Champagne"],
+            "bezel_types": ["Knurled"],
+            "bracelet_types": ["Steel"],
+            "price_modifiers": {}
+        }
+    },
+    "Cartier": {
+        "Santos": {
+            "reference_patterns": ["WSSA0018", "WSSA0037", "WGSA0029"],
+            "base_trade_price": 6500,
+            "dial_colors": ["Silver", "Blue", "Grey", "Green"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Steel", "Leather", "QuickSwitch"],
+            "price_modifiers": {"Green": 1.1}
+        },
+        "Tank": {
+            "reference_patterns": ["WSTA0065", "WSTA0041", "W5200027"],
+            "base_trade_price": 5500,
+            "dial_colors": ["Silver", "Blue", "Black"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather", "Steel"],
+            "price_modifiers": {}
+        },
+        "Ballon Bleu": {
+            "reference_patterns": ["WSBB0060", "W69012Z4", "W6920071"],
+            "base_trade_price": 5000,
+            "dial_colors": ["Silver", "Blue", "Pink"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Steel", "Leather"],
+            "price_modifiers": {}
+        },
+        "Pasha": {
+            "reference_patterns": ["WSPA0009", "WSPA0013"],
+            "base_trade_price": 7500,
+            "dial_colors": ["Silver", "Blue", "Grey"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Steel", "Leather"],
+            "price_modifiers": {}
+        }
+    },
+    "IWC": {
+        "Portugieser": {
+            "reference_patterns": ["IW371605", "IW500714", "IW371615"],
+            "base_trade_price": 7500,
+            "dial_colors": ["White", "Blue", "Silver", "Black"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather", "Steel"],
+            "price_modifiers": {"Blue": 1.05}
+        },
+        "Pilot": {
+            "reference_patterns": ["IW388101", "IW377709", "IW329301"],
+            "base_trade_price": 5500,
+            "dial_colors": ["Black", "Blue", "Green"],
+            "bezel_types": ["Matte"],
+            "bracelet_types": ["Leather", "Steel", "Textile"],
+            "price_modifiers": {"Green": 1.1}
+        },
+        "Big Pilot": {
+            "reference_patterns": ["IW501001", "IW329303", "IW501012"],
+            "base_trade_price": 12000,
+            "dial_colors": ["Black", "Blue"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather", "Steel"],
+            "price_modifiers": {}
+        },
+        "Aquatimer": {
+            "reference_patterns": ["IW329001", "IW356802"],
+            "base_trade_price": 5000,
+            "dial_colors": ["Black", "Blue"],
+            "bezel_types": ["Rotating"],
+            "bracelet_types": ["Rubber", "Steel"],
+            "price_modifiers": {}
+        }
+    },
+    "Breitling": {
+        "Navitimer": {
+            "reference_patterns": ["AB0127", "AB0139", "AB0121"],
+            "base_trade_price": 7000,
+            "dial_colors": ["Black", "Blue", "Silver", "Green"],
+            "bezel_types": ["Slide Rule"],
+            "bracelet_types": ["Leather", "Steel"],
+            "price_modifiers": {"Green": 1.1}
+        },
+        "Superocean": {
+            "reference_patterns": ["A17367", "A17375", "A17376"],
+            "base_trade_price": 3800,
+            "dial_colors": ["Black", "Blue", "Orange", "Green"],
+            "bezel_types": ["Ceramic", "Unidirectional"],
+            "bracelet_types": ["Steel", "Rubber"],
+            "price_modifiers": {"Orange": 1.05}
+        },
+        "Chronomat": {
+            "reference_patterns": ["AB0134", "AB0136", "AB0115"],
+            "base_trade_price": 6500,
+            "dial_colors": ["Black", "Blue", "Copper", "Silver"],
+            "bezel_types": ["Rider Tabs"],
+            "bracelet_types": ["Steel", "Rubber", "Leather"],
+            "price_modifiers": {"Copper": 1.1}
+        },
+        "Avenger": {
+            "reference_patterns": ["A13317", "A17318", "A32397"],
+            "base_trade_price": 4500,
+            "dial_colors": ["Black", "Blue", "Yellow"],
+            "bezel_types": ["Unidirectional"],
+            "bracelet_types": ["Steel", "Leather", "Military"],
+            "price_modifiers": {}
+        }
+    },
+    "Panerai": {
+        "Luminor": {
+            "reference_patterns": ["PAM01312", "PAM01392", "PAM01088"],
+            "base_trade_price": 7500,
+            "dial_colors": ["Black", "Blue", "Green"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather", "Rubber"],
+            "price_modifiers": {"Green": 1.1}
+        },
+        "Submersible": {
+            "reference_patterns": ["PAM01305", "PAM00973", "PAM01070"],
+            "base_trade_price": 9000,
+            "dial_colors": ["Black", "Blue", "Green"],
+            "bezel_types": ["Rotating Ceramic"],
+            "bracelet_types": ["Rubber", "Steel"],
+            "price_modifiers": {}
+        },
+        "Radiomir": {
+            "reference_patterns": ["PAM00753", "PAM00995", "PAM01184"],
+            "base_trade_price": 6500,
+            "dial_colors": ["Black", "Brown", "Blue"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {}
+        }
+    },
+    "Vacheron Constantin": {
+        "Overseas": {
+            "reference_patterns": ["4500V", "5500V", "2300V"],
+            "base_trade_price": 22000,
+            "dial_colors": ["Blue", "Silver", "Black", "Green"],
+            "bezel_types": ["Maltese Cross"],
+            "bracelet_types": ["Steel", "Rubber", "Leather"],
+            "price_modifiers": {"Blue": 1.1, "Green": 1.15}
+        },
+        "Patrimony": {
+            "reference_patterns": ["81180", "85180", "81530"],
+            "base_trade_price": 18000,
+            "dial_colors": ["Silver", "White", "Blue"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {}
+        },
+        "Traditionnelle": {
+            "reference_patterns": ["87172", "82172", "43075"],
+            "base_trade_price": 25000,
+            "dial_colors": ["Silver", "Grey", "Blue"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {}
+        }
+    },
+    "Jaeger-LeCoultre": {
+        "Reverso": {
+            "reference_patterns": ["Q3858520", "Q2438520", "Q7068420"],
+            "base_trade_price": 8500,
+            "dial_colors": ["Silver", "Black", "Blue", "Grey"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather", "Steel"],
+            "price_modifiers": {}
+        },
+        "Master Ultra Thin": {
+            "reference_patterns": ["Q1288420", "Q1368420", "Q1378420"],
+            "base_trade_price": 9500,
+            "dial_colors": ["Silver", "Blue", "Black"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather", "Steel"],
+            "price_modifiers": {}
+        },
+        "Polaris": {
+            "reference_patterns": ["Q9068670", "Q842843J", "Q9028480"],
+            "base_trade_price": 8000,
+            "dial_colors": ["Black", "Blue", "Grey"],
+            "bezel_types": ["Rotating"],
+            "bracelet_types": ["Steel", "Rubber"],
+            "price_modifiers": {}
+        }
+    },
+    "A. Lange & Söhne": {
+        "Lange 1": {
+            "reference_patterns": ["191.032", "191.039", "117.028"],
+            "base_trade_price": 35000,
+            "dial_colors": ["Silver", "Black", "Blue", "Grey"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {"Blue": 1.1}
+        },
+        "Saxonia": {
+            "reference_patterns": ["380.032", "380.033", "219.026"],
+            "base_trade_price": 18000,
+            "dial_colors": ["Silver", "Black", "Blue"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {}
+        },
+        "Odysseus": {
+            "reference_patterns": ["363.068", "363.179"],
+            "base_trade_price": 45000,
+            "dial_colors": ["Grey", "Blue"],
+            "bezel_types": ["Integrated"],
+            "bracelet_types": ["Steel", "Rubber"],
+            "price_modifiers": {}
+        }
+    },
+    "Hublot": {
+        "Big Bang": {
+            "reference_patterns": ["301.SB", "411.NM", "441.NX"],
+            "base_trade_price": 12000,
+            "dial_colors": ["Black", "Blue", "Grey"],
+            "bezel_types": ["Ceramic", "Titanium"],
+            "bracelet_types": ["Rubber", "Steel"],
+            "price_modifiers": {"Ceramic": 1.1}
+        },
+        "Classic Fusion": {
+            "reference_patterns": ["511.NX", "542.NX", "565.NX"],
+            "base_trade_price": 6500,
+            "dial_colors": ["Black", "Blue", "Grey", "Racing Grey"],
+            "bezel_types": ["Titanium", "Ceramic"],
+            "bracelet_types": ["Rubber", "Leather"],
+            "price_modifiers": {}
+        },
+        "Spirit of Big Bang": {
+            "reference_patterns": ["601.NM", "642.NX"],
+            "base_trade_price": 14000,
+            "dial_colors": ["Black", "Blue"],
+            "bezel_types": ["Titanium", "Ceramic"],
+            "bracelet_types": ["Rubber"],
+            "price_modifiers": {}
+        }
+    },
+    "TAG Heuer": {
+        "Carrera": {
+            "reference_patterns": ["CBN2A1B", "CBS2210", "CBK2110"],
+            "base_trade_price": 4500,
+            "dial_colors": ["Black", "Blue", "Silver", "Green"],
+            "bezel_types": ["Tachymeter", "Ceramic"],
+            "bracelet_types": ["Steel", "Leather"],
+            "price_modifiers": {"Green": 1.05}
+        },
+        "Monaco": {
+            "reference_patterns": ["CBL2111", "CAW211P", "CBL2113"],
+            "base_trade_price": 5500,
+            "dial_colors": ["Blue", "Black", "Grey", "Green"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather", "Steel"],
+            "price_modifiers": {}
+        },
+        "Aquaracer": {
+            "reference_patterns": ["WBP201B", "WBP2010", "WAY201A"],
+            "base_trade_price": 2500,
+            "dial_colors": ["Black", "Blue", "Green"],
+            "bezel_types": ["Ceramic", "Aluminum"],
+            "bracelet_types": ["Steel", "Rubber"],
+            "price_modifiers": {}
+        }
+    },
+    "Zenith": {
+        "Chronomaster": {
+            "reference_patterns": ["03.3200", "03.3300", "03.2040"],
+            "base_trade_price": 7500,
+            "dial_colors": ["Black", "White", "Blue"],
+            "bezel_types": ["Tachymeter"],
+            "bracelet_types": ["Steel", "Leather"],
+            "price_modifiers": {}
+        },
+        "Defy": {
+            "reference_patterns": ["95.9000", "95.9005", "87.9000"],
+            "base_trade_price": 8000,
+            "dial_colors": ["Blue", "Black", "Grey"],
+            "bezel_types": ["Integrated"],
+            "bracelet_types": ["Steel", "Rubber"],
+            "price_modifiers": {}
+        },
+        "Pilot": {
+            "reference_patterns": ["29.2430", "03.2430"],
+            "base_trade_price": 5500,
+            "dial_colors": ["Black", "Bronze"],
+            "bezel_types": ["Polished"],
+            "bracelet_types": ["Leather"],
+            "price_modifiers": {"Bronze": 1.1}
         }
     }
+}
+
+# Currency data with exchange rates (base USD)
+CURRENCIES = {
+    "USD": {"symbol": "$", "name": "US Dollar", "rate": 1.0},
+    "GBP": {"symbol": "£", "name": "British Pound", "rate": 0.79},
+    "EUR": {"symbol": "€", "name": "Euro", "rate": 0.92},
+    "CHF": {"symbol": "CHF", "name": "Swiss Franc", "rate": 0.88},
+    "JPY": {"symbol": "¥", "name": "Japanese Yen", "rate": 149.50},
+    "AUD": {"symbol": "A$", "name": "Australian Dollar", "rate": 1.53},
+    "CAD": {"symbol": "C$", "name": "Canadian Dollar", "rate": 1.36},
+    "HKD": {"symbol": "HK$", "name": "Hong Kong Dollar", "rate": 7.82},
+    "SGD": {"symbol": "S$", "name": "Singapore Dollar", "rate": 1.34},
+    "AED": {"symbol": "د.إ", "name": "UAE Dirham", "rate": 3.67}
 }
 
 # Condition multipliers for valuation
