@@ -1,11 +1,12 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -13,6 +14,8 @@ import base64
 import json
 import httpx
 import random
+import hashlib
+import secrets
 from emergentintegrations.llm.openai import LlmChat, ImageContent, UserMessage
 
 ROOT_DIR = Path(__file__).parent
@@ -31,6 +34,12 @@ exchange_rate_cache = {
     "rates": {},
     "last_updated": None
 }
+
+# Simple token store (in production, use Redis or JWT)
+active_tokens = {}
+
+# Security
+security = HTTPBearer(auto_error=False)
 
 # Create the main app
 app = FastAPI(title="Crowntime AI - Watch Market Intelligence")
