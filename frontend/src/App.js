@@ -370,14 +370,14 @@ const HomePage = () => {
               <button
                 onClick={calculateValuation}
                 disabled={isLoading || !watchData.brand || !watchData.model_family}
-                className="flex-1 py-4 px-6 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-semibold rounded-xl hover:from-amber-500 hover:to-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-amber-500/20"
+                className="flex-1 py-4 px-6 btn-gold font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 data-testid="calculate-valuation-btn"
               >
                 {isLoading ? "Calculating..." : "Get Valuation"}
               </button>
               <button
                 onClick={resetForm}
-                className="px-6 py-4 border border-slate-700 text-slate-400 rounded-xl hover:bg-slate-800/50 hover:text-slate-300 transition-all duration-300"
+                className="px-6 py-4 border border-emerald-700/50 text-emerald-100/70 rounded-xl hover:bg-emerald-800/30 hover:text-emerald-100 transition-all duration-300"
                 data-testid="reset-form-btn"
               >
                 Reset
@@ -391,6 +391,8 @@ const HomePage = () => {
               valuation={valuation}
               confirmedFields={confirmedFields}
               totalFields={5}
+              currency={selectedCurrency}
+              currencies={currencies}
             />
             
             {/* Scan History */}
@@ -399,14 +401,16 @@ const HomePage = () => {
               onSelectScan={loadScanFromHistory}
               onDeleteScan={deleteScan}
               onClearHistory={clearHistory}
+              currency={selectedCurrency}
+              currencies={currencies}
             />
           </div>
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-12 text-center text-sm text-slate-600 max-w-3xl mx-auto">
-          <p className="border-t border-slate-800 pt-6">
-            <strong className="text-slate-500">Disclaimer:</strong> Crowntime AI provides market intelligence estimates only. 
+        <div className="mt-12 text-center text-sm text-emerald-100/40 max-w-3xl mx-auto">
+          <p className="border-t border-emerald-800/50 pt-6">
+            <strong className="text-emerald-100/60">Disclaimer:</strong> Crowntime AI provides market intelligence estimates only. 
             These are not appraisals and should not be used as such. Values are based on recent trade-level data 
             and may not reflect your specific watch&apos;s condition, provenance, or current market dynamics.
           </p>
