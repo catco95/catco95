@@ -8,9 +8,11 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import base64
 import json
+import httpx
+import random
 from emergentintegrations.llm.openai import LlmChat, ImageContent, UserMessage
 
 ROOT_DIR = Path(__file__).parent
@@ -22,7 +24,13 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Emergent LLM Key
-EMERGENT_KEY = os.environ.get('EMERGENT_LLM_KEY')
+EMERGENT_KEY = os.environ.get('EMERGENT_KEY')
+
+# Exchange rate cache
+exchange_rate_cache = {
+    "rates": {},
+    "last_updated": None
+}
 
 # Create the main app
 app = FastAPI(title="Crowntime AI - Watch Market Intelligence")
