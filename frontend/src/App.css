@@ -119,6 +119,52 @@ input[type="radio"]:checked::after {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Fade In animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Slide Up animation */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slideUp {
+    animation: slideUp 0.3s ease-out;
+}
+
+/* Scale animation */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.2s ease-out;
+}
+
 /* Gradient text */
 .gradient-text {
     background: linear-gradient(135deg, #f59e0b, #fbbf24);
@@ -208,11 +254,52 @@ input[type="number"] {
     opacity: 1;
 }
 
+/* Drag and drop zone */
+.drag-zone {
+    transition: all 0.2s ease;
+}
+
+.drag-zone.active {
+    border-color: rgb(245, 158, 11);
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+/* Recharts custom tooltip */
+.recharts-tooltip-wrapper {
+    outline: none !important;
+}
+
+.recharts-default-tooltip {
+    background-color: rgba(13, 61, 61, 0.95) !important;
+    border: 1px solid rgba(20, 184, 166, 0.5) !important;
+    border-radius: 8px !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .hide-mobile {
         display: none;
     }
+    
+    .modal-content {
+        max-height: 85vh;
+    }
+}
+
+/* Glass effect */
+.glass {
+    background: rgba(13, 78, 78, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
+/* Glow effect */
+.glow {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.glow-teal {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
 }
 
 /* Print styles */
@@ -220,4 +307,25 @@ input[type="number"] {
     .no-print {
         display: none !important;
     }
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(20, 184, 166, 0.1) 25%,
+        rgba(20, 184, 166, 0.2) 50%,
+        rgba(20, 184, 166, 0.1) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
 }
