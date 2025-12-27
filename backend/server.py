@@ -872,6 +872,11 @@ async def get_conditions():
     """Get available condition grades"""
     return {"conditions": list(CONDITION_MULTIPLIERS.keys())}
 
+@api_router.get("/currencies")
+async def get_currencies():
+    """Get available currencies with exchange rates"""
+    return {"currencies": CURRENCIES}
+
 @api_router.get("/calibration-modes")
 async def get_calibration_modes():
     """Get available dealer calibration modes"""
