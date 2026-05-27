@@ -8,6 +8,7 @@ import VideosPage from "./pages/VideosPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import ProphetCardsPage from "./pages/ProphetCardsPage";
 import "@/App.css";
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/prophet-cards" element={<ProphetCardsPage />} />
         </Routes>
       </BrowserRouter>
     </div>
