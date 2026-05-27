@@ -68,6 +68,14 @@ const Navbar = ({ transparent = false }) => {
             <PlayCircle className="w-4 h-4" />
             Videos
           </button>
+          <button
+            onClick={() => navigate("/prophet-cards")}
+            className={`text-sm font-medium transition-colors ${
+              location.pathname === "/prophet-cards" ? "text-emerald-600" : textColor
+            }`}
+          >
+            Prophet Cards
+          </button>
           {user ? (
             <>
               <button
@@ -121,6 +129,7 @@ const Navbar = ({ transparent = false }) => {
         >
           <button onClick={() => { navigate("/courses"); setMenuOpen(false); }} className="block w-full text-left text-gray-700 font-medium py-2">Courses</button>
           <button onClick={() => { navigate("/videos"); setMenuOpen(false); }} className="block w-full text-left text-gray-700 font-medium py-2">Videos</button>
+          <button onClick={() => { navigate("/prophet-cards"); setMenuOpen(false); }} className="block w-full text-left text-gray-700 font-medium py-2">Prophet Cards</button>
           {user ? (
             <>
               <button onClick={() => { navigate("/dashboard"); setMenuOpen(false); }} className="block w-full text-left text-gray-700 font-medium py-2">Dashboard</button>
