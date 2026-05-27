@@ -1,7 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Clock, Award, TrendingUp, ChevronRight, LogOut } from "lucide-react";
+import { motion } from "framer-motion";
+import { BookOpen, Clock, TrendingUp, ChevronRight, Award, ArrowRight } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import Navbar from "../components/Navbar";
+
+const StatCard = ({ icon, label, value, color }) => (
+  <div className="bg-white rounded-2xl border border-gray-100 p-6 flex items-center gap-4 shadow-sm">
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+      {icon}
+    </div>
+    <div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-sm text-gray-500 mt-0.5">{label}</p>
+    </div>
+  </div>
+);
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -12,246 +26,200 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkUser();
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate("/login"); return; }
+      setUser(user);
+      await fetchUserData(user);
+    };
+    init();
   }, []);
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    setUser(user);
-    await fetchUserData(user);
-  };
 
   const fetchUserData = async (user) => {
     try {
-      // Fetch user progress
-      const { data: progress, error: progressError } = await supabase
-        .from('user_progress')
-        .select(`
-          *,
-          lessons (
-            id,
-            title,
-            course_id,
-            order,
-            duration_minutes,
-            courses (
-              id,
-              title,
-              category
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('completed', true)
-        .order('completed_at', { ascending: false })
-        .limit(10);
-
-      if (progressError) throw progressError;
-
-      setRecentProgress(progress || []);
-
-      // Calculate unique courses
-      const uniqueCourses = [...new Set(progress?.map(p => p.lessons?.courses?.id))].slice(0, 3);
-
-      if (uniqueCourses.length > 0) {
-        const { data: courses, error: coursesError } = await supabase
-          .from('courses')
-          .select('*')
-          .in('id', uniqueCourses);
-
-        if (coursesError) throw coursesError;
-        setEnrolledCourses(courses || []);
-      }
-
-      // Fetch all course IDs for progress calculation
       const { data: allProgress } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('completed', true);
+        .from("user_progress")
+        .select(`*, lessons(id, title, course_id, order, duration_minutes, courses(id, title, category, image_url))`)
+        .eq("user_id", user.id)
+        .eq("completed", true)
+        .order("completed_at", { ascending: false });
 
-      // Calculate stats
-      const totalLessonsCompleted = allProgress?.length || 0;
-      const totalHours = Math.floor(totalLessonsCompleted * 30 / 60); // Assume avg 30 min per lesson
+      const progress = allProgress || [];
+      setRecentProgress(progress.slice(0, 8));
+
+      const courseMap = {};
+      progress.forEach((p) => {
+        const c = p.lessons?.courses;
+        if (c && !courseMap[c.id]) courseMap[c.id] = c;
+      });
+      setEnrolledCourses(Object.values(courseMap).slice(0, 6));
+
+      const totalLessons = progress.length;
+      const totalHours = Math.floor(totalLessons * 30 / 60);
 
       setProfile({
-        name: user.user_metadata?.full_name || user.email?.split('@')[0],
+        name: user.user_metadata?.full_name || user.email?.split("@")[0],
         email: user.email,
-        lessonsCompleted: totalLessonsCompleted,
+        lessonsCompleted: totalLessons,
         hoursLearned: totalHours,
-        coursesInProgress: uniqueCourses.length
+        coursesInProgress: Object.keys(courseMap).length,
       });
-    } catch (error) {
-      console.error('Error fetching user data:', error);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex justify-center items-center min-h-[80vh]">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pt-24">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome back, {profile?.name}!</p>
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Sign Out</span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+
+      {/* Page header */}
+      <div className="bg-white border-b border-gray-100 pt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="text-sm text-emerald-600 font-semibold uppercase tracking-wider mb-1">Welcome back</p>
+            <h1 className="text-3xl font-bold text-gray-900">{profile?.name}</h1>
+            <p className="text-gray-500 mt-1">{profile?.email}</p>
+          </motion.div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Lessons Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{profile?.lessonsCompleted || 0}</p>
-              </div>
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Hours Learned</p>
-                <p className="text-2xl font-bold text-gray-900">{profile?.hoursLearned || 0}</p>
-              </div>
-            </div>
-          </div>
+        {/* Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        >
+          <StatCard
+            icon={<BookOpen className="w-6 h-6 text-emerald-600" />}
+            label="Lessons Completed"
+            value={profile?.lessonsCompleted || 0}
+            color="bg-emerald-50"
+          />
+          <StatCard
+            icon={<Clock className="w-6 h-6 text-blue-600" />}
+            label="Hours Learned"
+            value={profile?.hoursLearned || 0}
+            color="bg-blue-50"
+          />
+          <StatCard
+            icon={<TrendingUp className="w-6 h-6 text-teal-600" />}
+            label="Courses In Progress"
+            value={profile?.coursesInProgress || 0}
+            color="bg-teal-50"
+          />
+        </motion.div>
 
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Courses In Progress</p>
-                <p className="text-2xl font-bold text-gray-900">{profile?.coursesInProgress || 0}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Courses Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">My Courses</h2>
+        {/* Courses section */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-bold text-gray-900">My Courses</h2>
             <button
-              onClick={() => navigate('/courses')}
-              className="text-emerald-600 font-semibold hover:underline flex items-center gap-1"
+              onClick={() => navigate("/courses")}
+              className="text-sm text-emerald-600 font-semibold flex items-center gap-1 hover:text-emerald-700 transition-colors"
             >
-              Browse All Courses
-              <ChevronRight className="w-5 h-5" />
+              Browse All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
           {enrolledCourses.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-md p-8 text-center">
-              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Start Your Learning Journey</h3>
-              <p className="text-gray-600 mb-6">You haven't started any courses yet. Explore our courses and begin learning!</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
+              <BookOpen className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Your Learning Journey</h3>
+              <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
+                You haven't started any courses yet. Explore our courses and begin learning.
+              </p>
               <button
-                onClick={() => navigate('/courses')}
-                className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold"
+                onClick={() => navigate("/courses")}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold text-sm"
               >
-                Explore Courses
+                Explore Courses <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {enrolledCourses.map((course) => (
-                <div
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {enrolledCourses.map((course, i) => (
+                <motion.div
                   key={course.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.05 }}
                   onClick={() => navigate(`/courses/${course.id}`)}
-                  className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-shadow"
+                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-100 cursor-pointer transition-all"
                 >
-                  <div className="aspect-video relative">
+                  <div className="aspect-video overflow-hidden">
                     <img
                       src={course.image_url}
                       alt={course.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{course.title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">{course.description}</p>
-                    <button
-                      className="mt-4 text-emerald-600 font-semibold text-sm flex items-center gap-1"
-                    >
-                      Continue Learning
-                      <ChevronRight className="w-4 h-4" />
+                  <div className="p-5">
+                    <h3 className="font-bold text-gray-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
+                      {course.title}
+                    </h3>
+                    <button className="mt-3 text-emerald-600 text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                      Continue Learning <ArrowRight className="w-3.5 h-3.5" />
                     </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.section>
+
+        {/* Recent Activity */}
+        {recentProgress.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-5">Recent Activity</h2>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+              {recentProgress.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => navigate(`/lessons/${item.lesson_id}`)}
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Award className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate">{item.lessons?.title}</p>
+                    <p className="text-xs text-gray-500 truncate">{item.lessons?.courses?.title}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Completed</span>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(item.completed_at).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Recent Activity */}
-        {recentProgress.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Activity</h2>
-            <div className="bg-white rounded-xl shadow-md">
-              <div className="divide-y divide-gray-100">
-                {recentProgress.map((progress) => (
-                  <div
-                    key={progress.id}
-                    onClick={() => navigate(`/lessons/${progress.lesson_id}`)}
-                    className="p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Award className="w-6 h-6 text-emerald-600" />
-                    </div>
-                    <div className="flex-grow">
-                      <p className="font-semibold text-gray-900">{progress.lessons?.title}</p>
-                      <p className="text-sm text-gray-600">{progress.lessons?.courses?.title}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500">Completed</p>
-                      <p className="text-sm text-gray-600">
-                        {new Date(progress.completed_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          </motion.section>
         )}
       </div>
     </div>
