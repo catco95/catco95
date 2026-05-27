@@ -1,45 +1,25 @@
-import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
-import ValuationTool from "./pages/ValuationTool";
-import AccessGate from "./components/AccessGate";
+import CoursesPage from "./pages/CoursesPage";
+import CourseDetailPage from "./pages/CourseDetailPage";
+import LessonPage from "./pages/LessonPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
 import "@/App.css";
 
 function App() {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if user has access
-    const access = localStorage.getItem('crowntime_access');
-    if (access === 'granted') {
-      setHasAccess(true);
-    }
-    setLoading(false);
-  }, []);
-
-  const handleAccessGranted = () => {
-    setHasAccess(true);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  if (!hasAccess) {
-    return <AccessGate onAccessGranted={handleAccessGranted} />;
-  }
-
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/valuate" element={<ValuationTool />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+          <Route path="/lessons/:lessonId" element={<LessonPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Routes>
       </BrowserRouter>
     </div>

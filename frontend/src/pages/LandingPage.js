@@ -1,47 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Watch, TrendingUp, Shield, BarChart3 } from "lucide-react";
-import BetaBadge from "../components/BetaBadge";
-import CrowntimeLogo from "../components/CrowntimeLogo";
+import { BookOpen, Users, Award, Star, ChevronRight, Globe } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const valuationsUsed = parseInt(localStorage.getItem('crowntime_valuations_used') || '0');
+  const [featuredCourses, setFeaturedCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeaturedCourses();
+  }, []);
+
+  const fetchFeaturedCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setFeaturedCourses(data || []);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCategoryLabel = (category) => {
+    const labels = {
+      'arabic': 'Arabic Language',
+      'quran': 'Quran Studies',
+      'tajweed': 'Tajweed'
+    };
+    return labels[category] || category;
+  };
+
+  const getLevelLabel = (level) => {
+    const labels = {
+      'beginner': 'Beginner',
+      'intermediate': 'Intermediate',
+      'advanced': 'Advanced'
+    };
+    return labels[level] || level;
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <BetaBadge valuationsUsed={valuationsUsed} valuationsLimit={5} />
-      
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-white/10"
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-emerald-100"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="cursor-pointer" onClick={() => navigate("/")} data-testid="logo">
-            <CrowntimeLogo size="md" />
-          </div>
-          <button
-            onClick={() => navigate("/valuate")}
-            data-testid="header-valuate-button"
-            className="rounded-none uppercase tracking-widest text-xs font-bold px-8 py-4 bg-primary text-primary-foreground hover:bg-white hover:text-black transition-all duration-300"
+          <div
+            className="cursor-pointer flex items-center gap-3"
+            onClick={() => navigate("/")}
+            data-testid="logo"
           >
-            Valuate
-          </button>
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+              <Globe className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">AMDAAD²</h1>
+              <p className="text-xs text-emerald-600 -mt-1">Learn Arabic & Quran</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
+            >
+              Courses
+            </button>
+            <button
+              onClick={() => navigate("/login")}
+              className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold"
+            >
+              Sign In
+            </button>
+          </div>
         </div>
       </motion.header>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-24">
-        <div className="absolute inset-0 opacity-20">
-          <img
-            src="https://images.unsplash.com/photo-1745305023239-b476a0faa159?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjB3YXRjaCUyMG1hY3JvJTIwbWVjaGFuaWNhbCUyMG1vdmVtZW50fGVufDB8fHx8MTc2NjY2MjAzN3ww&ixlib=rb-4.1.0&q=85"
-            alt="Watch movement"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/80"></div>
+      <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23059669' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -51,25 +104,36 @@ const LandingPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
-              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-6" data-testid="hero-tagline">
-                Market Intelligence
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 rounded-full mb-6">
+                <Star className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm font-medium text-emerald-700">Begin Your Journey</span>
               </div>
-              <h1 className="font-heading text-5xl sm:text-6xl lg:text-7xl tracking-tight mb-8 leading-tight" data-testid="hero-title">
-                Conservative Valuation
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight" data-testid="hero-title">
+                Master Arabic
                 <br />
-                <span className="text-primary">Intelligence</span>
+                <span className="text-emerald-600">& Quran</span>
               </h1>
-              <p className="text-lg text-muted-foreground mb-12 leading-relaxed max-w-xl" data-testid="hero-description">
-                Professional-grade watch market analysis for collectors, dealers, and investors.
-                No hype. No speculation. Just conservative, data-driven valuation guidance.
+              <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-xl" data-testid="hero-description">
+                Embark on a transformative learning journey with expert-led courses
+                in Arabic language, Quran memorization, and Tajweed.
+                Study at your own pace with structured lessons.
               </p>
-              <button
-                onClick={() => navigate("/valuate")}
-                data-testid="hero-cta-button"
-                className="rounded-none uppercase tracking-widest text-xs font-bold px-12 py-5 bg-primary text-primary-foreground hover:bg-white hover:text-black transition-all duration-300"
-              >
-                Get Started
-              </button>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={() => navigate("/courses")}
+                  data-testid="hero-cta-button"
+                  className="px-8 py-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl"
+                >
+                  Explore Courses
+                  <ChevronRight className="w-5 h-5 inline ml-2" />
+                </button>
+                <button
+                  onClick={() => navigate("/register")}
+                  className="px-8 py-4 bg-white text-emerald-600 rounded-lg hover:bg-emerald-50 transition-all duration-300 font-semibold text-lg border-2 border-emerald-600"
+                >
+                  Get Started Free
+                </button>
+              </div>
             </motion.div>
 
             <motion.div
@@ -78,12 +142,22 @@ const LandingPage = () => {
               transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
               className="hidden lg:block"
             >
-              <div className="bg-card/50 backdrop-blur-sm border border-white/5 rounded-sm p-12">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 border border-emerald-100">
                 <img
-                  src="https://images.unsplash.com/photo-1631802042706-230bce420129?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHw0fHxsdXh1cnklMjB3YXRjaCUyMG1hY3JvJTIwbWVjaGFuaWNhbCUyMG1vdmVtZW50fGVufDB8fHx8MTc2NjY2MjAzN3ww&ixlib=rb-4.1.0&q=85"
-                  alt="Luxury watch"
-                  className="w-full h-auto rounded-sm"
+                  src="https://images.unsplash.com/photo-1585036156165-8a3bf38b03e1?w=800&h=600&fit=crop"
+                  alt="Arabic Calligraphy"
+                  className="w-full h-auto rounded-lg"
                 />
+                <div className="mt-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600">Join thousands of learners</p>
+                    <p className="text-2xl font-bold text-gray-900">5,000+ Students</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-600">Expert instructors</p>
+                    <p className="text-2xl font-bold text-gray-900">20+ Teachers</p>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -91,48 +165,48 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-32 bg-card/30" data-testid="features-section">
+      <section className="py-24 bg-white" data-testid="features-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="text-center mb-20"
+            className="text-center mb-16"
           >
-            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
-              Our Approach
-            </div>
-            <h2 className="font-heading text-4xl sm:text-5xl tracking-tight">
-              Investment-Grade Intelligence
+            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+              Why Choose AMDAAD²?
             </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              A comprehensive platform designed for authentic Islamic learning
+            </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                icon: <Shield className="w-8 h-8" />,
-                title: "Conservative",
-                description: "Realistic valuations based on actual sales data, not speculative listings.",
-                testId: "feature-conservative"
+                icon: <BookOpen className="w-8 h-8" />,
+                title: "Structured Curriculum",
+                description: "Progressive courses designed by qualified scholars and educators.",
+                testId: "feature-structured"
               },
               {
-                icon: <TrendingUp className="w-8 h-8" />,
-                title: "Market-Aware",
-                description: "Real-time sentiment analysis across luxury watch market segments.",
-                testId: "feature-market-aware"
+                icon: <Users className="w-8 h-8" />,
+                title: "Expert Instructors",
+                description: "Learn from certified teachers with years of experience.",
+                testId: "feature-expert"
               },
               {
-                icon: <BarChart3 className="w-8 h-8" />,
-                title: "Data-Driven",
-                description: "AI-powered analysis of comparable sales and market liquidity.",
-                testId: "feature-data-driven"
+                icon: <Award className="w-8 h-8" />,
+                title: "Track Progress",
+                description: "Monitor your advancement with detailed progress tracking.",
+                testId: "feature-progress"
               },
               {
-                icon: <Watch className="w-8 h-8" />,
-                title: "Expert-Level",
-                description: "Trained on dealer knowledge and collector experience.",
-                testId: "feature-expert-level"
+                icon: <Star className="w-8 h-8" />,
+                title: "Quality Content",
+                description: "HD video lessons with comprehensive study materials.",
+                testId: "feature-quality"
               }
             ].map((feature, idx) => (
               <motion.div
@@ -142,11 +216,13 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                 data-testid={feature.testId}
-                className="bg-card/50 backdrop-blur-sm border border-white/5 hover:border-primary/30 transition-colors duration-300 rounded-sm p-8"
+                className="bg-gradient-to-br from-emerald-50 to-white p-8 rounded-xl border border-emerald-100 hover:border-emerald-300 transition-all duration-300 hover:shadow-lg"
               >
-                <div className="text-primary mb-6">{feature.icon}</div>
-                <h3 className="font-heading text-xl mb-4">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-6">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>
@@ -155,8 +231,86 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Featured Courses Section */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white" data-testid="courses-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+              Featured Courses
+            </h2>
+            <p className="text-xl text-gray-600">
+              Start learning with our most popular courses
+            </p>
+          </motion.div>
+
+          {loading ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredCourses.map((course, idx) => (
+                <motion.div
+                  key={course.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
+                  onClick={() => navigate(`/courses/${course.id}`)}
+                >
+                  <div className="aspect-video relative">
+                    <img
+                      src={course.image_url}
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-emerald-600 text-white text-sm font-semibold rounded-full">
+                        {getCategoryLabel(course.category)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                      <span className="px-2 py-1 bg-gray-100 rounded">{getLevelLabel(course.level)}</span>
+                      <span>•</span>
+                      <span>{course.lessons_count} lessons</span>
+                      <span>•</span>
+                      <span>{course.duration_hours}h</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{course.description}</p>
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <p className="text-sm text-gray-600">By {course.instructor}</p>
+                      <ChevronRight className="w-5 h-5 text-emerald-600" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <button
+              onClick={() => navigate("/courses")}
+              className="px-8 py-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-300 font-semibold text-lg"
+            >
+              View All Courses
+              <ChevronRight className="w-5 h-5 inline ml-2" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-32" data-testid="cta-section">
+      <section className="py-24 bg-gradient-to-r from-emerald-600 to-teal-600" data-testid="cta-section">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -164,44 +318,63 @@ const LandingPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <h2 className="font-heading text-4xl sm:text-5xl tracking-tight mb-8">
-              Ready for Professional Valuation?
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Begin Your Learning Journey Today
             </h2>
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Get conservative, investment-grade market intelligence for your timepiece in minutes.
+            <p className="text-xl text-emerald-50 mb-10 max-w-2xl mx-auto">
+              Join thousands of students who are mastering Arabic and Quran
+              with our comprehensive courses.
             </p>
             <button
-              onClick={() => navigate("/valuate")}
+              onClick={() => navigate("/register")}
               data-testid="cta-button"
-              className="rounded-none uppercase tracking-widest text-xs font-bold px-12 py-5 bg-primary text-primary-foreground hover:bg-white hover:text-black transition-all duration-300"
+              className="px-12 py-5 bg-white text-emerald-600 rounded-lg hover:bg-gray-100 transition-all duration-300 font-bold text-lg shadow-xl"
             >
-              Start Valuation
+              Get Started Now
             </button>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-12" data-testid="footer">
+      <footer className="bg-gray-900 text-white py-12" data-testid="footer">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center gap-6">
-            <CrowntimeLogo size="xl" />
-            
-            {/* Legal Disclaimer */}
-            <div className="max-w-3xl text-center space-y-4">
-              <h3 className="text-xs uppercase tracking-widest text-primary font-semibold">Legal Disclaimer</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Crowntime AI provides indicative market intelligence only and is not a certified appraisal service. 
-                Valuations are generated using artificial intelligence based on publicly available market data and should 
-                be considered estimates only. Actual sale prices may vary significantly based on condition, authenticity, 
-                market timing, and buyer preferences. Crowntime AI makes no warranties regarding accuracy and assumes no 
-                liability for decisions made based on these valuations. For certified appraisals, please consult a 
-                qualified professional watch appraiser. All trademarks and brand names are property of their respective owners.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                © 2025 Crowntime. All rights reserved.
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">AMDAAD²</h3>
+                  <p className="text-sm text-gray-400">Learn Arabic & Quran</p>
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-md">
+                A comprehensive platform for learning Arabic language, Quran memorization,
+                and Tajweed. Study with qualified instructors at your own pace.
               </p>
             </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="/courses" className="hover:text-white transition-colors">All Courses</a></li>
+                <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>support@amdaad2.com</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+            <p>© 2025 AMDAAD². All rights reserved. Made with Emergent</p>
           </div>
         </div>
       </footer>
