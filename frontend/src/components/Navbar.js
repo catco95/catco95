@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Globe, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
+import { Globe, Menu, X, LayoutDashboard, LogOut, CirclePlay as PlayCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 const Navbar = ({ transparent = false }) => {
@@ -59,6 +59,15 @@ const Navbar = ({ transparent = false }) => {
           >
             Courses
           </button>
+          <button
+            onClick={() => navigate("/videos")}
+            className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              location.pathname.startsWith("/videos") ? "text-emerald-600" : textColor
+            }`}
+          >
+            <PlayCircle className="w-4 h-4" />
+            Videos
+          </button>
           {user ? (
             <>
               <button
@@ -111,6 +120,7 @@ const Navbar = ({ transparent = false }) => {
           className="md:hidden bg-white border-b border-gray-100 px-4 pb-4 space-y-2"
         >
           <button onClick={() => { navigate("/courses"); setMenuOpen(false); }} className="block w-full text-left text-gray-700 font-medium py-2">Courses</button>
+          <button onClick={() => { navigate("/videos"); setMenuOpen(false); }} className="block w-full text-left text-gray-700 font-medium py-2">Videos</button>
           {user ? (
             <>
               <button onClick={() => { navigate("/dashboard"); setMenuOpen(false); }} className="block w-full text-left text-gray-700 font-medium py-2">Dashboard</button>
